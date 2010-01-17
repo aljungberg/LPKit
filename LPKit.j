@@ -28,13 +28,13 @@
  * 
  */
 
-@import <LPKit/CPArray+Additions.j>
 @import <LPKit/LPAnchorButton.j>
 @import <LPKit/LPCalendarView.j>
 @import <LPKit/LPChartView.j>
 @import <LPKit/LPCookieController.j>
 @import <LPKit/LPEmail.j>
 @import <LPKit/LPLocationController.j>
+@import <LPKit/LPPieChartView.j>
 @import <LPKit/LPSlideView.j>
 @import <LPKit/LPSparkLine.j>
 @import <LPKit/LPSwitch.j>

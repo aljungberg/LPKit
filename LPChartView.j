@@ -401,6 +401,9 @@ var LPChartViewDataSourceKey    = @"LPChartViewDataSourceKey",
     // Overwrite this method in your subclass
     // to get complete control of the drawing.
     
+    CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4379ca"]);
+    CGContextSetLineWidth(context, 2.0);
+    
     for (var setIndex = 0; setIndex < aFramesSet.length; setIndex++)
     {
         var items = aFramesSet[setIndex];
@@ -421,6 +424,7 @@ var LPChartViewDataSourceKey    = @"LPChartViewDataSourceKey",
             else
                 CGContextAddLineToPoint(context, point.x, point.y);
         }
+        
         // Stroke path
         CGContextStrokePath(context);
         
@@ -484,25 +488,27 @@ var LPChartViewDataSourceKey    = @"LPChartViewDataSourceKey",
 {
     if (chart)
     {
+        
         var subviews = [self subviews];
         
         // Clear any previous labels
-    	if (numberOfSubviews = subviews.length)
-    	{
-    		while (numberOfSubviews--)
-    		{
-    			[subviews[numberOfSubviews] removeFromSuperview];
-    			
-    			if (_labelData)
-    		        _cachedLabels.push(subviews[numberOfSubviews]);
-    		}
-	    }
-	    
-    	// Insert new subviews
-    	if (itemFrames = [chart itemFrames][0])
-    	{
-    	    for (var i = 0, length = itemFrames.length; i < length; i++)
-    	        [self addSubview:[self newLabelWithItemIndex:i]];
+        if (numberOfSubviews = subviews.length)
+        {
+            while (numberOfSubviews--)
+            {
+                [subviews[numberOfSubviews] removeFromSuperview];
+                
+                if (_labelData)
+                    _cachedLabels.push(subviews[numberOfSubviews]);
+            }
+        }
+        
+        // Insert new subviews
+        if (itemFrames = [chart itemFrames])
+        {
+            itemFrames = itemFrames[0];
+            for (var i = 0, length = itemFrames.length; i < length; i++)
+                [self addSubview:[self newLabelWithItemIndex:i]];
         }
         
         // Layout subviews
