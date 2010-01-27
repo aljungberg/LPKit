@@ -66,7 +66,7 @@
                                                 @"on-label-font", @"on-label-text-color", @"on-label-text-shadow-color", @"on-label-text-shadow-offset"]];
 }
 
-- (void)initWithFrame:(CGRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {   
@@ -78,7 +78,7 @@
         [onBackgroundView setHitTests:NO];
         [self addSubview:onBackgroundView];
         
-        knob = [[LPSwitchKnob alloc] initWithFrame:CGRectMake(0,0,20,20)];
+        knob = [[LPSwitchKnob alloc] initWithFrame:CGRectMakeZero()];
         [self addSubview:knob];
         
         offLabel = [CPTextField labelWithTitle:@"Off"];
@@ -90,6 +90,11 @@
         animationDuration = 0.2;
         animationCurve = CPAnimationEaseOut;
         
+        // Need to call layoutSubviews directly to make sure
+        // all theme attributes are set.
+        // TODO: FIX THIS.
+        [self layoutSubviews];
+        
         [self setNeedsLayout];
     }
     return self;
@@ -97,10 +102,16 @@
 
 - (void)setOn:(BOOL)shouldSetOn animated:(BOOL)shouldAnimate
 {
+   [self setOn:shouldSetOn animated:shouldAnimate sendAction:YES];
+}
+
+- (void)setOn:(BOOL)shouldSetOn animated:(BOOL)shouldAnimate sendAction:(BOOL)shouldSendAction
+{
     on = shouldSetOn;
     
     // Send action
-    [self sendAction:_action to:_target];
+    if (shouldSendAction)
+        [self sendAction:_action to:_target];
     
     var knobMinY = CGRectGetMinY([knob frame]),
         knobEndFrame = CGRectMake((on) ? [knob maxX] : [knob minX], knobMinY, CGRectGetWidth([knob frame]), CGRectGetHeight([knob frame])),
@@ -124,7 +135,7 @@
     {
         [knob setFrame:knobEndFrame];
         [onBackgroundView setFrame:onBackgroundEndFrame];
-        [offLabel setFrame:offLabelEndFrame]
+        [offLabel setFrame:offLabelEndFrame];
     }
 }
 
@@ -135,7 +146,7 @@
     
     isDragging = NO;
     
-    // If the drag started on top of the know, we highlight it
+    // If the drag started on top of the knob, we highlight it
     var startPointX = [knob convertPoint:dragStartPoint fromView:self].x;
     if (startPointX > 0 && startPointX < CGRectGetWidth([knob bounds]))
     {
@@ -216,7 +227,7 @@
 {
 }
 
-- (void)initWithFrame:(CGRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {

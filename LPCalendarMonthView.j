@@ -481,7 +481,7 @@ var _startAndEndOfWeekCache = {};
     return dayView;
 }
 
-- (void)initWithFrame:(CGRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {
