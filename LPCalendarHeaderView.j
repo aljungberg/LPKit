@@ -3,21 +3,21 @@
  * LPKit
  *
  * Created by Ludwig Pettersson on September 21, 2009.
- * 
+ *
  * The MIT License
- * 
+ *
  * Copyright (c) 2009 Ludwig Pettersson
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,7 +25,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- * 
+ *
  */
 
 _monthNames = [@"January", @"February", @"March", @"April", @"May", @"June", @"July", @"August", @"September", @"October", @"November", @"December"];
@@ -38,8 +38,9 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
     id prevButton @accessors(readonly);
     id nextButton @accessors(readonly);
     CPArray dayLabels;
-    
+
     BOOL weekStartsOnMonday @accessors;
+    BOOL fastForwardEnabled @accessors;
 }
 
 + (CPString)themeClass
@@ -57,31 +58,31 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
 {
     if(self = [super initWithFrame:aFrame])
     {
-        
+
         title = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         [title setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
         [self addSubview:title];
-        
+
         prevButton = [[LPCalendarHeaderPreviousButton alloc] initWithFrame:CGRectMake(6, 9, 0, 0)];
         [prevButton sizeToFit];
         [self addSubview:prevButton];
-        
+
         nextButton = [[LPCalendarHeaderNextButton alloc] initWithFrame:CGRectMake(CGRectGetMaxX([self bounds]) - 21, 9, 0, 0)];
         [nextButton sizeToFit];
         [nextButton setAutoresizingMask:CPViewMinXMargin];
         [self addSubview:nextButton];
-        
+
         dayLabels = [CPArray array];
-        
+
         for (var i = 0; i < [_dayNamesShort count]; i++)
         {
             var label = [LPCalendarLabel labelWithTitle:[_dayNamesShort objectAtIndex:i]];
             [dayLabels addObject:label];
             [self addSubview:label];
         }
-        
+
         [self setBackgroundColor:[CPColor lightGrayColor]];
-        
+
         [self setNeedsLayout];
     }
     return self;
@@ -97,9 +98,9 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
 - (void)setWeekStartsOnMonday:(BOOL)shouldWeekStartOnMonday
 {
     weekStartsOnMonday = shouldWeekStartOnMonday;
-    
+
     var dayNames = (shouldWeekStartOnMonday) ? _dayNamesShort : _dayNamesShortUS;
-    
+
     for (var i = 0; i < [dayLabels count]; i++)
         [[dayLabels objectAtIndex:i] setTitle:[dayNames objectAtIndex:i]];
 
@@ -113,10 +114,10 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
 
     for (var i = 0; i < [dayLabels count]; i++)
         [[dayLabels objectAtIndex:i] setFrame:CGRectMake(i * labelWidth, CGRectGetHeight([self bounds]) - labelHeight, labelWidth, labelHeight)];
-    
-    
+
+
     var superview = [self superview];
-    
+
     [self setBackgroundColor:[superview valueForThemeAttribute:@"header-background-color" inState:[self themeState]]];
     [title setFont:[superview valueForThemeAttribute:@"header-font" inState:[self themeState]]];
     [title setTextColor:[superview valueForThemeAttribute:@"header-text-color" inState:[self themeState]]];
@@ -158,9 +159,13 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
 
 @end
 
+LPCalendarFastForwardThreshold = 1.0;
+LPCalendarFastForwardDelay = 0.1;
 
-@implementation LPCalendarHeaderButton : CPButton 
+@implementation LPCalendarHeaderButton : CPButton
 {
+    CPDate  startedTrackingAt;
+    BOOL    didFastForward;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -173,10 +178,66 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
     return self;
 }
 
+- (BOOL)startTrackingAt:(CGPoint)aPoint
+{
+    if ([[self superview] fastForwardEnabled])
+    {
+        startedTrackingAt = [CPDate date];
+        didFastForward = NO;
+        [CPTimer scheduledTimerWithTimeInterval:LPCalendarFastForwardThreshold target:self selector:"didHitFastForwardDelay" userInfo:nil repeats:NO];
+    }
+    return [super startTrackingAt:aPoint];
+}
+
+- (void)trackMouse:(CPEvent)anEvent
+{
+    var type = [anEvent type];
+
+    if (type === CPLeftMouseUp)
+    {
+        var previousMask;
+        startedTrackingAt = nil;
+        if (didFastForward)
+        {
+            // Supress the regular button clicked action call if this is the end of a fast forward.
+            previousMask = [self sendActionOn:0];
+        }
+        [super trackMouse:anEvent];
+        if (didFastForward)
+        {
+            [self sendActionOn:previousMask];
+            didFastForward = NO;
+        }
+    }
+    else
+    {
+        [super trackMouse:anEvent];
+    }
+}
+
+- (void)didHitFastForwardDelay
+{
+    if (startedTrackingAt === nil)
+        return;
+    didFastForward = YES;
+    [self sendAction:[self action] to:[self target]];
+    [CPTimer scheduledTimerWithTimeInterval:LPCalendarFastForwardDelay target:self selector:"didHitFastForwardDelay" userInfo:nil repeats:NO];
+}
+
+/*!
+    YES when the user has activated fast forward mode by holding down the mouse on the button.
+
+    This flag is only relevant in the action handler for this button.
+*/
+- (BOOL)isFastForwarding
+{
+    return (startedTrackingAt !== nil);
+}
+
 @end
 
 
-@implementation LPCalendarHeaderPreviousButton : LPCalendarHeaderButton 
+@implementation LPCalendarHeaderPreviousButton : LPCalendarHeaderButton
 {
 }
 
@@ -189,7 +250,7 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
                         [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[self class]] pathForResource:@"LPCalendarView/previous.png"] size:CGSizeMake(15.0, 15.0)], nil, nil
                     ]
                 isVertical:NO]];
-        
+
         [self setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
     }
     return self;
@@ -197,7 +258,7 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
 
 @end
 
-@implementation LPCalendarHeaderNextButton : LPCalendarHeaderButton 
+@implementation LPCalendarHeaderNextButton : LPCalendarHeaderButton
 {
 }
 
@@ -210,7 +271,7 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
                         [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[self class]] pathForResource:@"LPCalendarView/next.png"] size:CGSizeMake(15.0, 15.0)], nil, nil
                     ]
                 isVertical:NO]];
-        
+
         [self setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
     }
     return self;
