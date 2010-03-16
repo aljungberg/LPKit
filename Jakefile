@@ -30,9 +30,10 @@
 
 var ENV = require("system").env,
     FILE = require("file"),
-    task = require("jake").task,
+    JAKE = require("jake"),
+    task = JAKE.task,
     CLEAN = require("jake/clean").CLEAN,
-    FileList = require("jake").FileList,
+    FileList = JAKE.FileList,
     framework = require("cappuccino/jake").framework,
     browserEnvironment = require("objective-j/jake/environment").Browser,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
@@ -50,7 +51,7 @@ framework ("LPKit", function(task)
     task.setSummary("A collection of re-usable views, controls & utilities for Cappuccino.");
     task.setSources(new FileList("*.j"));
     task.setResources(new FileList("Resources/**/*"));
-    task.setEnvironments([browserEnvironment]);
+    //task.setEnvironments([browserEnvironment]);
     //task.setFlattensSources(true);
     task.setInfoPlistPath("Info.plist");
 
@@ -60,4 +61,18 @@ framework ("LPKit", function(task)
         task.setCompilerFlags("-O");
 });
 
-task ("default", ["LPKit"]);
+task ("debug", function()
+{
+    ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("release", function()
+{
+    ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("default", ["release"]);
+
+task ("build", ["LPKit"]);

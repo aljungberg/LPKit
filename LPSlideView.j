@@ -31,11 +31,10 @@
 @import <AppKit/CPView.j>
 @import <LPKit/LPViewAnimation.j>
 
-
 LPSlideViewHorizontalDirection = 0;
-LPSlideViewVerticalDirection = 1;
-LPSlideViewPositiveDirection = 3;
-LPSlideViewNegativeDirection = 4;
+LPSlideViewVerticalDirection   = 1;
+LPSlideViewPositiveDirection   = 2;
+LPSlideViewNegativeDirection   = 4;
 
 
 @implementation LPSlideView : CPView
