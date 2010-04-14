@@ -40,7 +40,7 @@ var labelViewHeight = 20,
     id delegate @accessors;
     id drawView @accessors;
     
-    LPGridView gridView;
+    LPChartGridView gridView @accessors;
     
     LPChartLabelView labelView @accessors(readonly);
     BOOL displayLabels @accessors;
@@ -56,16 +56,23 @@ var labelViewHeight = 20,
 {
     if (self = [super initWithFrame:aFrame])
     {
-        gridView = [[LPChartGridView alloc] initWithFrame:CGRectMakeZero()];
-        [gridView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-        [self addSubview:gridView];
-        
-        labelView = [[LPChartLabelView alloc] initWithFrame:CGRectMake(drawViewPadding, CGRectGetHeight(aFrame) - labelViewHeight, CGRectGetWidth(aFrame) - (2 * drawViewPadding), labelViewHeight)];
-        [self addSubview:labelView];
-        
-        _currentSize = CGSizeMake(0,0);
+        [self awakeFromCib];
     }
     return self;
+}
+
+- (void)awakeFromCib
+{
+    gridView = [[LPChartGridView alloc] initWithFrame:CGRectMakeZero()];
+    [gridView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    [self addSubview:gridView];
+    
+    var bounds = [self bounds];
+    
+    labelView = [[LPChartLabelView alloc] initWithFrame:CGRectMake(drawViewPadding, CGRectGetHeight(bounds) - labelViewHeight, CGRectGetWidth(bounds) - (2 * drawViewPadding), labelViewHeight)];
+    [self addSubview:labelView];
+    
+    _currentSize = CGSizeMake(0,0);
 }
 
 - (void)setDataSource:(id)aDataSource
@@ -76,6 +83,9 @@ var labelViewHeight = 20,
 
 - (void)setDrawView:(id)aDrawView
 {
+    if (aDrawView === drawView)
+        return;
+    
     if (!drawView)
         [self addSubview:aDrawView positioned:CPWindowAbove relativeTo:gridView];
     else
@@ -103,6 +113,17 @@ var labelViewHeight = 20,
     
     // Re-draw
     [self reloadData];
+}
+
+- (void)setGridView:(CPView)aGridView
+{
+    if (gridView === aGridView)
+        return;
+    
+    [aGridView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    [self replaceSubview:gridView with:aGridView];
+    
+    gridView = aGridView;
 }
 
 - (void)setDisplayLabels:(BOOL)shouldDisplayLabels
@@ -169,6 +190,10 @@ var labelViewHeight = 20,
         
         _data.push(row);
     }
+    
+    // Clear the current size of the chart
+    // this will force the re-calculation of item frames.
+    _currentSize = nil;
     
     // Update grid view
     //[gridView setItemsLength:numberOfItems];
@@ -359,7 +384,7 @@ var LPChartViewDataSourceKey    = @"LPChartViewDataSourceKey",
         // Vertical lines
         for (var i = 0; i < itemFrames[0].length; i++)
         {
-            CGContextFillRect(context, CGRectMake(itemFrames[0][i].origin.x, 0, lineWidth, height));
+            CGContextFillRect(context, CGRectMake(FLOOR(itemFrames[0][i].origin.x), 0, lineWidth, height));
         }
     
         // Right most line
@@ -488,7 +513,6 @@ var LPChartViewDataSourceKey    = @"LPChartViewDataSourceKey",
 {
     if (chart)
     {
-        
         var subviews = [self subviews];
         
         // Clear any previous labels
