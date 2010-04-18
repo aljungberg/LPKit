@@ -136,14 +136,14 @@ var _startAndEndOfWeekCache = {};
         previousMonth = new Date(_firstDay.getTime() - 86400000);
         nextMonth = new Date(_firstDay.getTime() + (([date daysInMonth] + 1) * 86400000));
     }
-    
+
     [self reloadData];
 }
 
 - (void)tileSize
 {
     var tileSize = [calendarView currentValueForThemeAttribute:@"tile-size"];
-    
+
     if (tileSize)
         return tileSize
     else
@@ -208,13 +208,13 @@ var _startAndEndOfWeekCache = {};
 {
     if ([hiddenRows isEqualToArray:hiddenRowsArray])
         return;
-    
+
     hiddenRows = hiddenRowsArray;
-    
+
     var tiles = [self subviews],
         tileIndex = 0,
         showAllRows = !hiddenRowsArray
-    
+
     for (var weekIndex = 0; weekIndex < 6; weekIndex++)
     {
         var shouldHideRow = showAllRows || [hiddenRows indexOfObject:weekIndex] > -1;
@@ -228,7 +228,7 @@ var _startAndEndOfWeekCache = {};
 }
 
 - (void)reloadData
-{   
+{
     if (!date)
         return;
 
@@ -563,7 +563,7 @@ var _startAndEndOfWeekCache = {};
 {
     if (date.getTime() === aDate.getTime())
         return;
-    
+
     // Update date
     date.setTime(aDate.getTime());
 

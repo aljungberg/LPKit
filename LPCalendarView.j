@@ -104,6 +104,15 @@
     return self;
 }
 
+- (void)setTheme:(CPTheme)aTheme
+{
+    [super setTheme:aTheme];
+
+    [self setNeedsLayout];
+    [firstMonthView setNeedsLayout];
+    [secondMonthView setNeedsLayout];
+}
+
 - (void)selectDate:(CPDate)aDate
 {
     [self setMonth:aDate];
@@ -197,10 +206,10 @@
 {
     var width = CGRectGetWidth([self bounds]),
         headerHeight = [self currentValueForThemeAttribute:@"header-height"];
-        
+
     [headerView setFrameSize:CGSizeMake(width, headerHeight)];
     [slideView setFrame:CGRectMake(0, headerHeight, width, CGRectGetHeight([self bounds]) - headerHeight)];
-    
+
     [slideView setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
 }
 

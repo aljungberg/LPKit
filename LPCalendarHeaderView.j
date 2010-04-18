@@ -74,8 +74,6 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
             [self addSubview:label];
         }
 
-        [self setBackgroundColor:[CPColor lightGrayColor]];
-
         [self setNeedsLayout];
     }
     return self;
