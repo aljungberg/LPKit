@@ -50,19 +50,25 @@ var labelViewHeight = 20,
     
     CPArray _framesSet;
     CGSize _currentSize;
+    
+    float _maxValuePosition;
+    float _minValuePosition;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {
-        [self awakeFromCib];
+        [self _setup];
     }
     return self;
 }
 
-- (void)awakeFromCib
+- (void)_setup
 {
+    _maxValuePosition = 1.0;
+    _minValuePosition = 0.0;
+    
     gridView = [[LPChartGridView alloc] initWithFrame:CGRectMakeZero()];
     [gridView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [self addSubview:gridView];
@@ -78,7 +84,6 @@ var labelViewHeight = 20,
 - (void)setDataSource:(id)aDataSource
 {
     dataSource = aDataSource;
-    [self reloadData];
 }
 
 - (void)setDrawView:(id)aDrawView
@@ -86,10 +91,10 @@ var labelViewHeight = 20,
     if (aDrawView === drawView)
         return;
     
-    if (!drawView)
-        [self addSubview:aDrawView positioned:CPWindowAbove relativeTo:gridView];
-    else
-        [self replaceSubview:drawView with:aDrawView];
+    if (drawView)
+        [drawView removeFromSuperview];
+    
+    [self addSubview:aDrawView positioned:CPWindowAbove relativeTo:gridView];
     
     // Got a new drawView
     drawView = aDrawView;
@@ -112,7 +117,8 @@ var labelViewHeight = 20,
     [gridView setFrame:drawViewFrame];
     
     // Re-draw
-    [self reloadData];
+    if ([self window])
+        [self reloadData];
 }
 
 - (void)setGridView:(CPView)aGridView
@@ -154,12 +160,20 @@ var labelViewHeight = 20,
     [gridView setHidden:!shouldDisplayGrid];
 }
 
+- (void)setMaxValuePosition:(float)aMaxValuePosition minValuePosition:(float)aMinValuePosition
+{
+    _maxValuePosition = aMaxValuePosition;
+    _minValuePosition = aMinValuePosition;
+    
+    [[self drawView] setNeedsDisplay:YES];
+}
+
 - (CPArray)itemFrames
 {
-    if (_data && _maxValue >= 0)
+    if (dataSource && drawView && _data && _maxValue >= 0)
         return [self calculateItemFramesWithSets:_data maxValue:_maxValue];
     else
-        return nil;
+        return [];
 }
 
 - (void)reloadData
@@ -196,6 +210,7 @@ var labelViewHeight = 20,
     _currentSize = nil;
     
     // Update grid view
+    [gridView setNeedsDisplay:YES];
     //[gridView setItemsLength:numberOfItems];
     
     // Update Label view
@@ -207,8 +222,17 @@ var labelViewHeight = 20,
 
 - (CPArray)calculateItemFramesWithSets:(CPArray)sets maxValue:(int)aMaxValue
 {
-    drawViewSize = [drawView bounds].size;
+    var drawViewSize = [drawView bounds].size,
+        maxValueHeightDelta = (1.0 - _maxValuePosition) * drawViewSize.height;
     
+    // Restrict drawViewSize according to min value positions
+    if (_minValuePosition !== 0.0)
+        drawViewSize.height -= _minValuePosition * drawViewSize.height;
+
+    if (_maxValuePosition !== 1.0)
+        drawViewSize.height -= maxValueHeightDelta;
+
+    // Make sure we don't do unnecessary word
     if (_currentSize && CGSizeEqualToSize(_currentSize, drawViewSize))
         return _framesSet;
         
@@ -216,6 +240,9 @@ var labelViewHeight = 20,
 
     // Reset frames set
     _framesSet = [CPArray array];
+    
+    if (!sets.length)
+        return _framesSet; 
     
     var width = drawViewSize.width,
         height = drawViewSize.height - (2 * drawViewPadding),
@@ -246,6 +273,10 @@ var labelViewHeight = 20,
             
             // Set Y Origin
             itemFrame.origin.y = height - CGRectGetHeight(itemFrame) + drawViewPadding;
+            
+            // Make up for _maxValuePosition if it's set
+            if (_maxValuePosition !== 1.0)
+                itemFrame.origin.y += maxValueHeightDelta;
             
             // Save it
             row.push(itemFrame);
@@ -288,18 +319,25 @@ var labelViewHeight = 20,
         [delegate chart:self didMouseOverItemAtIndex:-1];
 }
 
+- (void)viewDidMoveToWindow
+{
+    [self reloadData];
+}
+
 @end
 
 
-var LPChartViewDataSourceKey    = @"LPChartViewDataSourceKey",
-    LPChartViewDrawViewKey      = @"LPChartViewDrawViewKey",
-    LPChartViewGridViewKey      = @"LPChartViewGridViewKey",
-    LPChartViewDisplayLabelsKey = @"LPChartViewDisplayLabelsKey",
-    LPChartViewLabelViewKey     = @"LPChartViewLabelViewKey",
-    LPChartViewDataKey          = @"LPChartViewDataKey",
-    LPChartViewMaxValueKey      = @"LPChartViewMaxValueKey",
-    LPChartViewFramesSetKey     = @"LPChartViewFramesSetKey",
-    LPChartViewCurrentSizeKey   = @"LPChartViewCurrentSizeKey";
+var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
+    LPChartViewDrawViewKey         = @"LPChartViewDrawViewKey",
+    LPChartViewGridViewKey         = @"LPChartViewGridViewKey",
+    LPChartViewDisplayLabelsKey    = @"LPChartViewDisplayLabelsKey",
+    LPChartViewLabelViewKey        = @"LPChartViewLabelViewKey",
+    LPChartViewDataKey             = @"LPChartViewDataKey",
+    LPChartViewMaxValueKey         = @"LPChartViewMaxValueKey",
+    LPChartViewFramesSetKey        = @"LPChartViewFramesSetKey",
+    LPChartViewCurrentSizeKey      = @"LPChartViewCurrentSizeKey",
+    LPChartViewMaxValuePositionKey = @"LPChartViewMaxValuePositionKey",
+    LPChartViewMinValuePositionKey = @"LPChartViewMinValuePositionKey";
 
 @implementation LPChartView (CPCoding)
 
@@ -308,9 +346,9 @@ var LPChartViewDataSourceKey    = @"LPChartViewDataSourceKey",
     if (self = [super initWithCoder:aCoder])
     {
         dataSource = [aCoder decodeObjectForKey:LPChartViewDataSourceKey];
-        drawView = [aCoder decodeObjectForKey:LPChartViewDrawViewKey];
         
         gridView = [aCoder decodeObjectForKey:LPChartViewGridViewKey];
+        drawView = [aCoder decodeObjectForKey:LPChartViewDrawViewKey];
         
         displayLabels = ![aCoder containsValueForKey:LPChartViewDisplayLabelsKey] || [aCoder decodeObjectForKey:LPChartViewDisplayLabelsKey];
         labelView = [aCoder decodeObjectForKey:LPChartViewLabelViewKey];
@@ -320,6 +358,11 @@ var LPChartViewDataSourceKey    = @"LPChartViewDataSourceKey",
         
         _framesSet = [aCoder decodeObjectForKey:LPChartViewFramesSetKey];
         _currentSize = [aCoder decodeSizeForKey:LPChartViewCurrentSizeKey];
+        
+        _maxValuePosition = [aCoder decodeIntForKey:LPChartViewMaxValuePositionKey];
+        _minValuePosition = [aCoder decodeFloatForKey:LPChartViewMinValuePositionKey];
+        
+        [self _setup];
     }
     return self;
 }
@@ -343,6 +386,9 @@ var LPChartViewDataSourceKey    = @"LPChartViewDataSourceKey",
     
     if (_currentSize)
         [aCoder encodeSize:_currentSize forKey:LPChartViewCurrentSizeKey];
+    
+    [aCoder encodeFloat:_maxValuePosition forKey:LPChartViewMaxValuePositionKey];
+    [aCoder encodeFloat:_minValuePosition forKey:LPChartViewMinValuePositionKey];
 }
 
 @end
@@ -382,10 +428,15 @@ var LPChartViewDataSourceKey    = @"LPChartViewDataSourceKey",
         CGContextSetFillColor(context, gridColor);
         
         // Vertical lines
-        for (var i = 0; i < itemFrames[0].length; i++)
+        if (itemFrames.length)
         {
-            CGContextFillRect(context, CGRectMake(FLOOR(itemFrames[0][i].origin.x), 0, lineWidth, height));
+            for (var i = 0; i < itemFrames[0].length; i++)
+            {
+                CGContextFillRect(context, CGRectMake(FLOOR(itemFrames[0][i].origin.x), 0, lineWidth, height));
+            }
         }
+        else
+            CGContextFillRect(context, CGRectMake(0, 0, lineWidth, height));
     
         // Right most line
         CGContextFillRect(context, CGRectMake(width - lineWidth, 0, lineWidth, height));
@@ -528,7 +579,9 @@ var LPChartViewDataSourceKey    = @"LPChartViewDataSourceKey",
         }
         
         // Insert new subviews
-        if (itemFrames = [chart itemFrames])
+        var itemFrames = [chart itemFrames];
+        
+        if (itemFrames && itemFrames.length)
         {
             itemFrames = itemFrames[0];
             for (var i = 0, length = itemFrames.length; i < length; i++)
@@ -547,10 +600,15 @@ var LPChartViewDataSourceKey    = @"LPChartViewDataSourceKey",
 
 - (void)layoutSubviews
 {
+    var itemFrames = [chart itemFrames];
+    
+    if (!itemFrames)
+        return;
+    
     var subviews = [self subviews],
         numberOfSubviews = subviews.length,
         bounds = [self bounds],
-        itemFrames = [chart itemFrames][0],
+        itemFrames = itemFrames[0],
         drawViewPadding = CGRectGetMinX([[chart drawView] frame]);
 
     while (numberOfSubviews--)

@@ -51,6 +51,8 @@
     
     CPTextField offLabel;
     CPTextField onLabel;
+	
+	LPViewAnimation animation;
 }
 
 + (CPString)themeClass
@@ -107,11 +109,14 @@
 
 - (void)setOn:(BOOL)shouldSetOn animated:(BOOL)shouldAnimate sendAction:(BOOL)shouldSendAction
 {
-    on = shouldSetOn;
-    
-    // Send action
-    if (shouldSendAction)
+    // changed to stop the action firing if the user moved the switch to the inverse state, but then back to original state before releasing the mouse button
+    if (shouldSendAction && on !== shouldSetOn)
+    {
+		on = shouldSetOn;
         [self sendAction:_action to:_target];
+	}
+	else
+		on = shouldSetOn;
     
     var knobMinY = CGRectGetMinY([knob frame]),
         knobEndFrame = CGRectMake((on) ? [knob maxX] : [knob minX], knobMinY, CGRectGetWidth([knob frame]), CGRectGetHeight([knob frame])),
@@ -121,14 +126,43 @@
                                       CGRectGetWidth([offLabel bounds]), CGRectGetHeight([offLabel bounds])),
         onLabelEndFrame = CGRectMake(CGRectGetMinX(knobEndFrame) - labelOffset.width - CGRectGetWidth([onLabel bounds]), labelOffset.height,
                                      CGRectGetWidth([onLabel bounds]), CGRectGetHeight([onLabel bounds]));
+	
+	// added to counter a problem whereby changing the state more than once (i.e., ON -> OFF -> ON) before giving control to the run loop,
+	// caused the control to not update properly
+	if([animation isAnimating])
+		[animation stopAnimation];
     
     if (shouldAnimate)
     {
-        var animation = [[LPViewAnimation alloc] initWithDuration:animationDuration animationCurve:animationCurve];
-        [animation addView:knob start:nil end:knobEndFrame];
-        [animation addView:onBackgroundView start:nil end:onBackgroundEndFrame];
-        [animation addView:offLabel start:nil end:offLabelEndFrame];
-        [animation addView:onLabel start:nil end:onLabelEndFrame];
+        animation = [[LPViewAnimation alloc] initWithViewAnimations:[
+                {
+                    @"target": knob,
+                    @"animations": [
+                        [LPOriginAnimationKey, [knob frame].origin, knobEndFrame.origin]
+                    ]
+                },
+                {
+                    @"target": onBackgroundView,
+                    @"animations": [
+                        [LPFrameAnimationKey, [onBackgroundView frame], onBackgroundEndFrame]
+                    ]
+                },
+                {
+                    @"target": offLabel,
+                    @"animations": [
+                        [LPOriginAnimationKey, [offLabel frame].origin, offLabelEndFrame.origin]
+                    ]
+                },
+                {
+                    @"target": onLabel,
+                    @"animations": [
+                        [LPOriginAnimationKey, [onLabel frame].origin, onLabelEndFrame.origin]
+                    ]
+                }
+            ]];
+        [animation setAnimationCurve:animationCurve];
+        [animation setDuration:animationDuration];
+        [animation setDelegate:self];
         [animation startAnimation];
     }
     else
@@ -141,6 +175,9 @@
 
 - (void)mouseDown:(CPEvent)anEvent
 {
+    if (![self isEnabled])
+        return;
+
     dragStartPoint = [self convertPoint:[anEvent locationInWindow] fromView:nil];
     knobDragStartPoint = [knob frame].origin;
     
@@ -157,6 +194,9 @@
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
+    if (![self isEnabled])
+        return;
+
     // We are dragging
     isDragging = YES;
     
@@ -183,7 +223,10 @@
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    [self setOn:(isDragging) ? CGRectGetMidX([self bounds]) < CGRectGetMidX([knob frame]) : !on animated:YES];
+    if (![self isEnabled])
+        return;
+
+    [self setOn:isDragging ? CGRectGetMidX([self bounds]) < CGRectGetMidX([knob frame]) : !on animated:YES];
     
     [knob setHighlighted:NO];
     [self setNeedsLayout];
@@ -222,6 +265,7 @@
 }
 
 @end
+
 
 @implementation LPSwitchKnob : CPView
 {
