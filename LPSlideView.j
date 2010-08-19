@@ -39,7 +39,7 @@ LPSlideViewNegativeDirection   = 4;
 
 @implementation LPSlideView : CPView
 {
-    CPString slideDirection @accessors;
+    int slideDirection @accessors;
     id currentView @accessors;
     id previousView @accessors;
     
@@ -52,8 +52,7 @@ LPSlideViewNegativeDirection   = 4;
 
 - (id)initWithFrame:(CPRect)aFrame
 {
-    self = [super initWithFrame:aFrame];
-    if (self)
+    if (self = [super initWithFrame:aFrame])
     {
         animationCurve = CPAnimationEaseOut;
         slideDirection = LPSlideViewHorizontalDirection;
@@ -70,6 +69,7 @@ LPSlideViewNegativeDirection   = 4;
     else
         [aView setHidden:YES];
     
+    [aView setFrame:[self bounds]];
     [aView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [super addSubview:aView];
 }

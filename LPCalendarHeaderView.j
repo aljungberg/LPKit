@@ -27,20 +27,25 @@
  * THE SOFTWARE.
  *
  */
+@import <AppKit/CPButton.j>
+@import <AppKit/CPControl.j>
 
-_monthNames = [@"January", @"February", @"March", @"April", @"May", @"June", @"July", @"August", @"September", @"October", @"November", @"December"];
-_dayNamesShort = [@"mon", @"tue", @"wed", @"thu", @"fri", @"sat", @"sun"];
-_dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
+var LPMonthNames = [@"January", @"February", @"March", @"April", @"May", @"June", @"July", @"August", @"September", @"October", @"November", @"December"],
+    LPDayNamesShort = [@"mon", @"tue", @"wed", @"thu", @"fri", @"sat", @"sun"],
+    LPDayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
+
 
 @implementation LPCalendarHeaderView : CPControl
 {
-    CPTextField title;
-    id prevButton @accessors(readonly);
-    id nextButton @accessors(readonly);
-    CPArray dayLabels;
+    CPDate      representedDate;
 
-    BOOL weekStartsOnMonday @accessors;
-    BOOL fastForwardEnabled @accessors;
+    CPTextField monthLabel;
+    id          prevButton @accessors(readonly);
+    id          nextButton @accessors(readonly);
+    CPArray     dayLabels;
+
+    BOOL        weekStartsOnMonday @accessors;
+    BOOL        fastForwardEnabled @accessors;
 }
 
 + (CPString)themeClass
@@ -52,9 +57,9 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
 {
     if(self = [super initWithFrame:aFrame])
     {
-        title = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-        [title setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
-        [self addSubview:title];
+        monthLabel = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+        [monthLabel setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
+        [self addSubview:monthLabel];
 
         prevButton = [[LPCalendarHeaderArrowButton alloc] initWithFrame:CGRectMake(6, 9, 0, 0)];
         [prevButton sizeToFit];
@@ -67,9 +72,9 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
 
         dayLabels = [CPArray array];
 
-        for (var i = 0; i < [_dayNamesShort count]; i++)
+        for (var i = 0; i < [LPDayNamesShort count]; i++)
         {
-            var label = [LPCalendarLabel labelWithTitle:[_dayNamesShort objectAtIndex:i]];
+            var label = [LPCalendarLabel labelWithTitle:[LPDayNamesShort objectAtIndex:i]];
             [dayLabels addObject:label];
             [self addSubview:label];
         }
@@ -81,16 +86,21 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
 
 - (void)setDate:(CPDate)aDate
 {
-    [title setStringValue:[CPString stringWithFormat:@"%s %i", _monthNames[aDate.getUTCMonth()], aDate.getUTCFullYear()]];
-    [title sizeToFit];
-    [title setCenter:CGPointMake(CGRectGetMidX([self bounds]), 16)];
+    if ([representedDate isEqualToDate:aDate])
+        return;
+
+    representedDate = [aDate copy];
+
+    [monthLabel setStringValue:[CPString stringWithFormat:@"%s %i", LPMonthNames[representedDate.getUTCMonth()], representedDate.getUTCFullYear()]];
+    [monthLabel sizeToFit];
+    [monthLabel setCenter:CGPointMake(CGRectGetMidX([self bounds]), 16)];
 }
 
 - (void)setWeekStartsOnMonday:(BOOL)shouldWeekStartOnMonday
 {
     weekStartsOnMonday = shouldWeekStartOnMonday;
 
-    var dayNames = (shouldWeekStartOnMonday) ? _dayNamesShort : _dayNamesShortUS;
+    var dayNames = (shouldWeekStartOnMonday) ? LPDayNamesShort : LPDayNamesShortUS;
 
     for (var i = 0; i < [dayLabels count]; i++)
         [[dayLabels objectAtIndex:i] setTitle:[dayNames objectAtIndex:i]];
@@ -107,10 +117,10 @@ _dayNamesShortUS = [@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat"];
 
     // Title
     [self setBackgroundColor:[superview valueForThemeAttribute:@"header-background-color" inState:themeState]];
-    [title setFont:[superview valueForThemeAttribute:@"header-font" inState:themeState]];
-    [title setTextColor:[superview valueForThemeAttribute:@"header-text-color" inState:themeState]];
-    [title setTextShadowColor:[superview valueForThemeAttribute:@"header-text-shadow-color" inState:themeState]];
-    [title setTextShadowOffset:[superview valueForThemeAttribute:@"header-text-shadow-offset" inState:themeState]];
+    [monthLabel setFont:[superview valueForThemeAttribute:@"header-font" inState:themeState]];
+    [monthLabel setTextColor:[superview valueForThemeAttribute:@"header-text-color" inState:themeState]];
+    [monthLabel setTextShadowColor:[superview valueForThemeAttribute:@"header-text-shadow-color" inState:themeState]];
+    [monthLabel setTextShadowOffset:[superview valueForThemeAttribute:@"header-text-shadow-offset" inState:themeState]];
 
     // Arrows
     var buttonOrigin = [superview valueForThemeAttribute:@"header-button-offset" inState:themeState];

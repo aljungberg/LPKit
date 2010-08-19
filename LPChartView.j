@@ -36,23 +36,23 @@ var labelViewHeight = 20,
 
 @implementation LPChartView : CPView
 {
-    id dataSource @accessors;
-    id delegate @accessors;
-    id drawView @accessors;
+    id               dataSource @accessors;
+    id               delegate @accessors;
+    id               drawView @accessors;
     
-    LPChartGridView gridView @accessors;
+    LPChartGridView  gridView @accessors;
     
     LPChartLabelView labelView @accessors(readonly);
-    BOOL displayLabels @accessors;
+    BOOL             displayLabels @accessors;
     
-    CPArray _data;
-    int _maxValue;
+    CPArray          _data;
+    int              _maxValue;
     
-    CPArray _framesSet;
-    CGSize _currentSize;
+    CPArray          _framesSet;
+    CGSize           _currentSize;
     
-    float _maxValuePosition;
-    float _minValuePosition;
+    float            _maxValuePosition;
+    float            _minValuePosition;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -170,10 +170,7 @@ var labelViewHeight = 20,
 
 - (CPArray)itemFrames
 {
-    if (dataSource && drawView && _data && _maxValue >= 0)
-        return [self calculateItemFramesWithSets:_data maxValue:_maxValue];
-    else
-        return [];
+    return (dataSource && drawView && _data) ? [self calculateItemFramesWithSets:_data maxValue:_maxValue] : [CPArray array];
 }
 
 - (void)reloadData
@@ -211,7 +208,6 @@ var labelViewHeight = 20,
     
     // Update grid view
     [gridView setNeedsDisplay:YES];
-    //[gridView setItemsLength:numberOfItems];
     
     // Update Label view
     [labelView reloadData];
@@ -242,7 +238,13 @@ var labelViewHeight = 20,
     _framesSet = [CPArray array];
     
     if (!sets.length)
-        return _framesSet; 
+        return _framesSet;
+        
+    // If the chart has no data to display,
+    // we set the max value to 1 so that it will
+    // at least draw an empty line at the bottom of the chart.
+    if (aMaxValue === 0)
+        aMaxValue = 1;
     
     var width = drawViewSize.width,
         height = drawViewSize.height - (2 * drawViewPadding),
@@ -308,7 +310,10 @@ var labelViewHeight = 20,
             var itemFrame = itemFrames[i];
         
             if (itemFrame.origin.x <= locationInDrawView.x && (itemFrame.origin.x + itemFrame.size.width) > locationInDrawView.x)
+            {
                 [delegate chart:self didMouseOverItemAtIndex:i];
+                return;
+            }
         }
     }
 }
@@ -585,7 +590,11 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
         {
             itemFrames = itemFrames[0];
             for (var i = 0, length = itemFrames.length; i < length; i++)
-                [self addSubview:[self newLabelWithItemIndex:i]];
+            {
+                var label = [self newLabelWithItemIndex:i];
+                [label setLabel:[chart horizontalLabelForIndex:i]];
+                [self addSubview:label];
+            }
         }
         
         // Layout subviews
@@ -609,32 +618,29 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
         numberOfSubviews = subviews.length,
         bounds = [self bounds],
         itemFrames = itemFrames[0],
-        drawViewPadding = CGRectGetMinX([[chart drawView] frame]);
+        drawViewPadding = CGRectGetMinX([[chart drawView] frame]),
+        midY = CGRectGetMidY(bounds);
 
     while (numberOfSubviews--)
     {
         var subview = subviews[numberOfSubviews];
+        [subview setCenter:CGPointMake(CGRectGetMidX(itemFrames[numberOfSubviews]) + drawViewPadding, midY)];
         
-        [subview setLabel:[chart horizontalLabelForIndex:[subview itemIndex]]];
-        [subview setCenter:CGPointMake(CGRectGetMidX(itemFrames[numberOfSubviews]) + drawViewPadding, CGRectGetMidY(bounds))];
+        var subviewFrame = [subview frame];
         
-        // If either min x or max x is overflowing, set them to the possible min / max
-        var subviewFrame = [subview frame],
-            frameIsDirty = NO;
-            
+        // Make sure the label stays within the rame
         if (subviewFrame.origin.x < 0)
         {
             frameIsDirty = YES;
             subviewFrame.origin.x = 0;
+            [subview setFrame:subviewFrame];
         }
         else if (CGRectGetMaxX(subviewFrame) > bounds.size.width)
         {
             frameIsDirty = YES;
             subviewFrame.origin.x -= CGRectGetMaxX(subviewFrame) - bounds.size.width;
-        }
-        
-        if (frameIsDirty)
             [subview setFrame:subviewFrame];
+        }
     }
 }
  
