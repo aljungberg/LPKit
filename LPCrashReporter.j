@@ -59,6 +59,8 @@ var sharedErrorLoggerInstance = nil;
         alertMessage = [CPString stringWithFormat:@"The application %@ crashed unexpectedly.",
                                                   [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPBundleName"]];
         alertInformative = @"Click Reload to load the application again or click Report to send a report to the developer.";
+
+        install_msgSend_catcher();
     }
     return self;
 }
@@ -87,7 +89,6 @@ var sharedErrorLoggerInstance = nil;
     }
     else
     {
-        shouldCatchExceptions = NO;
         [anException raise];
     }
 }
@@ -266,17 +267,17 @@ var sharedErrorLoggerInstance = nil;
     Let the monkey patching begin
 */
 
-var original_objj_msgSend = objj_msgSend,
-    shouldCatchExceptions = YES;
+var original_objj_msgSend = objj_msgSend;
 
-objj_msgSend = function()
+var catcher_objj_msgSend = function()
 {
-    if (!shouldCatchExceptions)
-        return original_objj_msgSend.apply(this, arguments);
-
     try
     {
-        return original_objj_msgSend.apply(this, arguments);
+        // Don't catch on recursive objj_msgSend calls - if the exception
+        // doesn't propagate to the top we can assume it was handled properly.
+        // Also, wrapping every single objj_msgSend hits performance hard.
+        objj_msgSend = original_objj_msgSend;
+        return objj_msgSend.apply(this, arguments);
     }
     catch (anException)
     {
@@ -284,4 +285,17 @@ objj_msgSend = function()
         [[LPCrashReporter sharedErrorLogger] didCatchException:anException];
         return nil;
     }
-}
+    finally
+    {
+        // Reinstall when we exit the top level objj_msgSend.
+        objj_msgSend = catcher_objj_msgSend;
+    }
+};
+
+/*
+    Used by LPCrashReporter for the intial install.
+*/
+var install_msgSend_catcher = function()
+{
+    objj_msgSend = catcher_objj_msgSend;
+};
