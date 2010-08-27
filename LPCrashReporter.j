@@ -168,6 +168,7 @@ var sharedErrorLoggerInstance = nil;
                                                               navigator.userAgent, [[LPCrashReporter sharedErrorLogger] exception]];
         informationTextField = [LPMultiLineTextField textFieldWithStringValue:informationTextValue placeholder:@"" width:0];
         [informationTextField setEditable:NO];
+        [informationTextField setSelectable:YES];
         [informationTextField setFrame:CGRectMake(12, 31, CGRectGetWidth(aContentRect) - 24, 100)];
         [informationTextField setAutoresizingMask:CPViewWidthSizable];
         [contentView addSubview:informationTextField];
@@ -279,6 +280,7 @@ objj_msgSend = function()
     }
     catch (anException)
     {
+        CPLog.error(anException);
         [[LPCrashReporter sharedErrorLogger] didCatchException:anException];
         return nil;
     }
