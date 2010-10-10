@@ -41,12 +41,20 @@ var immutableDistantFuture = [CPDate distantFuture];
     return 32 - new Date(self.getFullYear(), self.getMonth(), 32).getDate();
 }
 
-- (void)resetToMidnight
++ (CPDate)dateAtMidnight:(CPDate)aDate
 {
-    self.setHours(0);
-    self.setMinutes(0);
-    self.setSeconds(0);
-    self.setMilliseconds(0);
+    var stringDate = [aDate description],
+        dayBefore = aDate.getDay(),
+        newDate = [[CPDate alloc] initWithString:stringDate.substr(0, 10) + ' 00:00:00 ' + stringDate.substr(20)];
+
+    // For some timezones and dates, midnight does not exist. E.g. CLT 2010-10-10 00:00 is actually 2010-10-09 23:00
+    // due to the summer time change (DST). Normally, regardless of the time zone, the shift is 1 hour but there
+    // have been 2 hour shifts too. So inch forward 1 hour at a time until we arrive at the original date. It
+    // won't be midnight but it'll be as close as we can get.
+    while(newDate.getDay() != dayBefore)
+        newDate.setTime(newDate.getTime() + 60 * 60 * 1000);
+
+    return newDate;
 }
 
 @end
@@ -128,7 +136,7 @@ var _startAndEndOfWeekCache = {};
     {
         // Reset the date to the first day of the month & midnight
         date.setDate(1);
-        [date resetToMidnight];
+        date = [CPDate dateAtMidnight:date];
 
         // There must be a better way to do this.
         _firstDay = [date copy];
@@ -198,12 +206,10 @@ var _startAndEndOfWeekCache = {};
 - (BOOL)dateIsWithinCurrentPeriod:(CPDate)aDate
 {
     var currentPeriod = [CPDate date];
-    [currentPeriod resetToMidnight];
+    currentPeriod = [CPDate dateAtMidnight:currentPeriod];
 
     if (selectionLengthType === LPCalendarDayLength)
-        return (currentPeriod.getDate() === aDate.getDate() &&
-                currentPeriod.getMonth() === aDate.getMonth() &&
-                currentPeriod.getFullYear() === aDate.getFullYear());
+        return [currentPeriod description].substr(0, 10) == [aDate description].substr(0, 10);
 
     if (selectionLengthType === LPCalendarWeekLength)
     {
@@ -262,9 +268,9 @@ var _startAndEndOfWeekCache = {};
         {
             var dayTile = tiles[tileIndex];
 
-            // Increment to next day
-            currentDate.setTime(currentDate.getTime() + 90000000);
-            [currentDate resetToMidnight];
+            // Increment to next day. Note: due to summer time, some days are longer than 24 hours.
+            currentDate.setTime([CPDate dateAtMidnight:currentDate].getTime() + 25 * 60 * 60 * 1000);
+            currentDate = [CPDate dateAtMidnight:currentDate];
 
             if (!dayTile._isHidden)
             {
@@ -417,7 +423,7 @@ var _startAndEndOfWeekCache = {};
     for (var i = 0; i < 2; i++)
     {
         if (_dates[i])
-            [_dates[i] resetToMidnight];
+            _dates[i] = [CPDate dateAtMidnight:_dates[i]];
     }
 
     // Swap the dates if startDate is bigger than endDate
@@ -441,7 +447,7 @@ var _startAndEndOfWeekCache = {};
         var tile = tiles[i],
             tileDate = [tile date];
 
-        [tileDate resetToMidnight];
+        tileDate = [CPDate dateAtMidnight:tileDate];
 
         if (aStartDate && tileDate >= aStartDate && tileDate <= anEndDate)
         {
