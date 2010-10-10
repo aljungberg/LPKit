@@ -51,7 +51,7 @@ var immutableDistantFuture = [CPDate distantFuture];
     // due to the summer time change (DST). Normally, regardless of the time zone, the shift is 1 hour but there
     // have been 2 hour shifts too. So inch forward 1 hour at a time until we arrive at the original date. It
     // won't be midnight but it'll be as close as we can get.
-    while(newDate.getDay() != dayBefore)
+    while (newDate.getDay() != dayBefore)
         newDate.setTime(newDate.getTime() + 60 * 60 * 1000);
 
     return newDate;
@@ -419,12 +419,8 @@ var _startAndEndOfWeekCache = {};
     }
 
     // Replace hours / minutes / seconds
-    var _dates = [aStartDate, anEndDate];
-    for (var i = 0; i < 2; i++)
-    {
-        if (_dates[i])
-            _dates[i] = [CPDate dateAtMidnight:_dates[i]];
-    }
+    aStartDate = [CPDate dateAtMidnight:aStartDate];
+    anEndDate = [CPDate dateAtMidnight:anEndDate];
 
     // Swap the dates if startDate is bigger than endDate
     if (aStartDate > anEndDate)
