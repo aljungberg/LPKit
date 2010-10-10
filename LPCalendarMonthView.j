@@ -74,7 +74,7 @@ var _startAndEndOfWeekCache = {};
 
     BOOL            highlightCurrentPeriod @accessors;
     BOOL            weekStartsOnMonday @accessors;
-    
+
     id              _delegate @accessors(property=delegate);
     LPCalendarView  calendarView @accessors;
     CPArray         hiddenRows @accessors;
@@ -118,10 +118,10 @@ var _startAndEndOfWeekCache = {};
     // No need to reloadData if the new date is the same as before.
     // ==
     // Future note: Do not use UTC comparison here,
-    // since we reset the date to the relative midnight later on. 
+    // since we reset the date to the relative midnight later on.
     if (date && date.getFullYear() === aDate.getFullYear() && date.getMonth() === aDate.getMonth())
         return;
-    
+
     date = [aDate copy];
 
     if (![aDate isEqualToDate:immutableDistantFuture])
@@ -145,9 +145,9 @@ var _startAndEndOfWeekCache = {};
 {
     if (selectionLengthType === aSelectionType)
         return;
-    
+
     selectionLengthType = aSelectionType;
-    
+
     [self reloadData];
 }
 
@@ -172,7 +172,7 @@ var _startAndEndOfWeekCache = {};
     {
         if (day == 0)
             day = 6
-        else if(day > 0)
+        else if (day > 0)
             day -= 1
     }
 
@@ -224,7 +224,7 @@ var _startAndEndOfWeekCache = {};
 
     var tiles = [self subviews],
         tileIndex = 0,
-        showAllRows = !hiddenRowsArray
+        showAllRows = !hiddenRowsArray;
 
     for (var weekIndex = 0; weekIndex < 6; weekIndex++)
     {
@@ -589,7 +589,7 @@ var _startAndEndOfWeekCache = {};
 - (void)layoutSubviews
 {
     var themeState = [self themeState];
-    
+
     [self setBackgroundColor:[calendarView valueForThemeAttribute:@"tile-bezel-color" inState:themeState]]
 
     [textField setFont:[calendarView valueForThemeAttribute:@"tile-font" inState:themeState]];
