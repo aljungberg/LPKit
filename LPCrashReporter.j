@@ -3,21 +3,21 @@
  * LPKit
  *
  * Created by Ludwig Pettersson on February 19, 2010.
- * 
+ *
  * The MIT License
- * 
+ *
  * Copyright (c) 2010 Ludwig Pettersson
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,18 +25,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- * 
- */
- 
-/**
- * Main function giving a function stack trace with a forced or passed in Error 
  *
- * @cfg {Error} e The error to create a stacktrace from (optional)
- * @cfg {Boolean} guess If we should try to resolve the names of anonymous functions
- * @return {Array} of Strings with functions, lines, files, and arguments where possible 
  */
-
-
 
 @import <Foundation/CPObject.j>
 @import <AppKit/CPAlert.j>
@@ -57,7 +47,7 @@ var sharedErrorLoggerInstance = nil;
 {
     if (!sharedErrorLoggerInstance)
         sharedErrorLoggerInstance = [[LPCrashReporter alloc] init];
-    
+
     return sharedErrorLoggerInstance;
 }
 
@@ -67,15 +57,14 @@ var sharedErrorLoggerInstance = nil;
     {
         if (_exception)
             return;
-        
+
         _exception = anException;
         _stackTrace = aStackTrace;
-        
-        
+
         var overlayWindow = [[LPCrashReporterOverlayWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
         [overlayWindow setLevel:CPNormalWindowLevel];
-        [overlayWindow makeKeyAndOrderFront:nil];    
-        
+        [overlayWindow makeKeyAndOrderFront:nil];
+
         var alert = [[CPAlert alloc] init];
         [alert setDelegate:self];
         [alert setAlertStyle:CPCriticalAlertStyle];
@@ -102,13 +91,13 @@ var sharedErrorLoggerInstance = nil;
 */
 
 - (void)alertDidEnd:(CPAlert)anAlert returnCode:(id)returnCode
-{   
+{
     switch(returnCode)
     {
         case 0: // Reload application
                 location.reload();
                 break;
-        
+
         case 1: // Send report
                 var reportWindow = [[LPCrashReporterReportWindow alloc] initWithContentRect:CGRectMake(0,0,460,309) styleMask:CPTitledWindowMask | CPResizableWindowMask stackTrace:_stackTrace];
                 [CPApp runModalForWindow:reportWindow];
@@ -120,9 +109,6 @@ var sharedErrorLoggerInstance = nil;
 
 
 @implementation LPCrashReporterOverlayWindow : CPWindow
-{
-    
-}
 
 - (void)initWithContentRect:(CGRect)aContentRect styleMask:(id)aStyleMask
 {
@@ -140,15 +126,15 @@ var sharedErrorLoggerInstance = nil;
 {
     CPTextField informationLabel;
     LPMultiLineTextField informationTextField;
-    
+
     CPTextField descriptionLabel;
     LPMultiLineTextField descriptionTextField;
-    
+
     CPButton sendButton;
     CPButton cancelButton;
-    
+
     CPTextField sendingLabel;
-    
+
     id _stackTrace;
 }
 
@@ -158,14 +144,14 @@ var sharedErrorLoggerInstance = nil;
     {
         var contentView = [self contentView],
             applicationName = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPBundleName"];
-        
+
         [self setMinSize:aContentRect.size];
         [self setTitle:[CPString stringWithFormat:@"Problem Report for %@", applicationName]];
-        
+
         informationLabel = [CPTextField labelWithTitle:@"Problem and system information:"];
         [informationLabel setFrameOrigin:CGPointMake(12,12)];
         [contentView addSubview:informationLabel];
-        
+
         _stackTrace = aStackTrace;
         var informationTextValue = [CPString stringWithFormat:@"User-Agent: %@\n\nException: %@",
                                                               navigator.userAgent, [[LPCrashReporter sharedErrorLogger] exception]];
@@ -174,16 +160,16 @@ var sharedErrorLoggerInstance = nil;
         [informationTextField setFrame:CGRectMake(12, 31, CGRectGetWidth(aContentRect) - 24, 100)];
         [informationTextField setAutoresizingMask:CPViewWidthSizable];
         [contentView addSubview:informationTextField];
-        
+
         descriptionLabel = [CPTextField labelWithTitle:@"Please describe what you were doing when the problem happened:"];
         [descriptionLabel setFrameOrigin:CGPointMake(12,141)];
         [contentView addSubview:descriptionLabel];
-        
+
         descriptionTextField = [LPMultiLineTextField textFieldWithStringValue:@"" placeholder:@"" width:0];
         [descriptionTextField setFrame:CGRectMake(CGRectGetMinX([informationTextField frame]), CGRectGetMaxY([descriptionLabel frame]) + 1, CGRectGetWidth([informationTextField frame]), 100)];
         [descriptionTextField setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [contentView addSubview:descriptionTextField];
-        
+
         sendButton = [CPButton buttonWithTitle:[CPString stringWithFormat:@"Send to %@", applicationName]];
         [sendButton setFrameOrigin:CGPointMake(CGRectGetWidth(aContentRect) - CGRectGetWidth([sendButton frame]) - 15, 270)];
         [sendButton setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
@@ -191,21 +177,21 @@ var sharedErrorLoggerInstance = nil;
         [sendButton setAction:@selector(didClickSendButton:)];
         [contentView addSubview:sendButton];
         [self setDefaultButton:sendButton];
-        
+
         cancelButton = [CPButton buttonWithTitle:@"Cancel"];
         [cancelButton setFrameOrigin:CGPointMake(CGRectGetMinX([sendButton frame]) - CGRectGetWidth([cancelButton frame]) - 12, CGRectGetMinY([sendButton frame]))];
         [cancelButton setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
         [cancelButton setTarget:self];
         [cancelButton setAction:@selector(didClickCancelButton:)];
         [contentView addSubview:cancelButton];
-        
+
         sendingLabel = [CPTextField labelWithTitle:@"Sending Report..."];
         [sendingLabel setFont:[CPFont boldSystemFontOfSize:11]];
         [sendingLabel sizeToFit];
         [sendingLabel setFrameOrigin:CGPointMake(12, CGRectGetMaxY(aContentRect) - 35)];
         [sendingLabel setHidden:YES];
         [contentView addSubview:sendingLabel];
-    
+
     }
     return self;
 }
@@ -224,17 +210,16 @@ var sharedErrorLoggerInstance = nil;
     [cancelButton setEnabled:NO];
     [informationLabel setAlphaValue:0.5];
     [descriptionLabel setAlphaValue:0.5];
-    
+
     [sendingLabel setHidden:NO];
-    
-    console.log(_stackTrace);
+
     var loggingURL = [CPURL URLWithString:[[CPBundle mainBundle] objectForInfoDictionaryKey:@"LPCrashReporterLoggingURL"] || @"/"],
         request = [LPURLPostRequest requestWithURL:loggingURL],
         exception = [[LPCrashReporter sharedErrorLogger] exception],
-        content = { 'name': [exception name], 
+        content = { 'name': [exception name],
                     'reason': [exception reason],
-                    'userAgent': navigator.userAgent, 
-                    'description': [descriptionTextField stringValue], 
+                    'userAgent': navigator.userAgent,
+                    'description': [descriptionTextField stringValue],
                     'stackTrace': @""+_stackTrace+@""};
 
     [request setContent:content];
@@ -256,7 +241,7 @@ var sharedErrorLoggerInstance = nil;
 {
     [CPApp stopModal];
     [self orderOut:nil];
-    
+
     var alert = [[CPAlert alloc] init];
     [alert setDelegate:[LPCrashReporter sharedErrorLogger]];
     [alert setAlertStyle:CPInformationalAlertStyle];
@@ -278,7 +263,7 @@ objj_msgSend = function()
 {
     if (!shouldCatchExceptions)
         return original_objj_msgSend.apply(this, arguments);
-    
+
     try
     {
         return original_objj_msgSend.apply(this, arguments);
