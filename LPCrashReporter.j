@@ -28,17 +28,29 @@
  * 
  */
  
+/**
+ * Main function giving a function stack trace with a forced or passed in Error 
+ *
+ * @cfg {Error} e The error to create a stacktrace from (optional)
+ * @cfg {Boolean} guess If we should try to resolve the names of anonymous functions
+ * @return {Array} of Strings with functions, lines, files, and arguments where possible 
+ */
+
+
+
 @import <Foundation/CPObject.j>
 @import <AppKit/CPAlert.j>
 @import <LPKit/LPURLPostRequest.j>
 @import <LPKit/LPMultiLineTextField.j>
+@import "Resources/stacktrace.js"
 
 var sharedErrorLoggerInstance = nil;
 
 
 @implementation LPCrashReporter : CPObject
 {
-    CPException _exception @accessors(property=exception);
+    CPException _exception  @accessors(property=exception);
+    id          _stackTrace @accessors(property=stackTrace);
 }
 
 + (id)sharedErrorLogger
@@ -49,7 +61,7 @@ var sharedErrorLoggerInstance = nil;
     return sharedErrorLoggerInstance;
 }
 
-- (void)didCatchException:(CPException)anException
+- (void)didCatchException:(CPException)anException stackTrace:(id)aStackTrace
 {
     if ([self shouldInterceptException])
     {
@@ -57,10 +69,12 @@ var sharedErrorLoggerInstance = nil;
             return;
         
         _exception = anException;
+        _stackTrace = aStackTrace;
+        
         
         var overlayWindow = [[LPCrashReporterOverlayWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
         [overlayWindow setLevel:CPNormalWindowLevel];
-        [overlayWindow makeKeyAndOrderFront:nil];
+        [overlayWindow makeKeyAndOrderFront:nil];    
         
         var alert = [[CPAlert alloc] init];
         [alert setDelegate:self];
@@ -96,7 +110,7 @@ var sharedErrorLoggerInstance = nil;
                 break;
         
         case 1: // Send report
-                var reportWindow = [[LPCrashReporterReportWindow alloc] initWithContentRect:CGRectMake(0,0,460,309) styleMask:CPTitledWindowMask | CPResizableWindowMask];
+                var reportWindow = [[LPCrashReporterReportWindow alloc] initWithContentRect:CGRectMake(0,0,460,309) styleMask:CPTitledWindowMask | CPResizableWindowMask stackTrace:_stackTrace];
                 [CPApp runModalForWindow:reportWindow];
                 break;
     }
@@ -134,9 +148,11 @@ var sharedErrorLoggerInstance = nil;
     CPButton cancelButton;
     
     CPTextField sendingLabel;
+    
+    id _stackTrace;
 }
 
-- (void)initWithContentRect:(CGRect)aContentRect styleMask:(id)aStyleMask
+- (void)initWithContentRect:(CGRect)aContentRect styleMask:(id)aStyleMask stackTrace:(id)aStackTrace
 {
     if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
     {
@@ -150,6 +166,7 @@ var sharedErrorLoggerInstance = nil;
         [informationLabel setFrameOrigin:CGPointMake(12,12)];
         [contentView addSubview:informationLabel];
         
+        _stackTrace = aStackTrace;
         var informationTextValue = [CPString stringWithFormat:@"User-Agent: %@\n\nException: %@",
                                                               navigator.userAgent, [[LPCrashReporter sharedErrorLogger] exception]];
         informationTextField = [LPMultiLineTextField textFieldWithStringValue:informationTextValue placeholder:@"" width:0];
@@ -210,11 +227,15 @@ var sharedErrorLoggerInstance = nil;
     
     [sendingLabel setHidden:NO];
     
+    console.log(_stackTrace);
     var loggingURL = [CPURL URLWithString:[[CPBundle mainBundle] objectForInfoDictionaryKey:@"LPCrashReporterLoggingURL"] || @"/"],
         request = [LPURLPostRequest requestWithURL:loggingURL],
         exception = [[LPCrashReporter sharedErrorLogger] exception],
-        content = {'name': [exception name], 'reason': [exception reason],
-                   'userAgent': navigator.userAgent, 'description': [descriptionTextField stringValue]};
+        content = { 'name': [exception name], 
+                    'reason': [exception reason],
+                    'userAgent': navigator.userAgent, 
+                    'description': [descriptionTextField stringValue], 
+                    'stackTrace': @""+_stackTrace+@""};
 
     [request setContent:content];
     [CPURLConnection connectionWithRequest:request delegate:self];
@@ -264,7 +285,7 @@ objj_msgSend = function()
     }
     catch (anException)
     {
-        [[LPCrashReporter sharedErrorLogger] didCatchException:anException];
+        [[LPCrashReporter sharedErrorLogger] didCatchException:anException stackTrace:printStackTrace({e: anException})];
         return nil;
     }
 }
