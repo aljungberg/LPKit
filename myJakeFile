@@ -37,7 +37,7 @@ var OS = require("os"),
     FileList = JAKE.FileList,
     framework = require("cappuccino/jake").framework,
     browserEnvironment = require("objective-j/jake/environment").Browser,
-    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
+    configuration = ENV["CONFIGURATION"] || "Debug";
 
 framework ("LPKit", function(task)
 {   
