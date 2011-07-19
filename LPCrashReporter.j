@@ -99,7 +99,7 @@ var sharedErrorLoggerInstance = nil;
                 break;
 
         case 1: // Send report
-                var reportWindow = [[LPCrashReporterReportWindow alloc] initWithContentRect:CGRectMake(0,0,460,309) styleMask:CPTitledWindowMask | CPResizableWindowMask stackTrace:_stackTrace];
+                var reportWindow = [[LPCrashReporterReportWindow alloc] initWithContentRect:CGRectMake(0,0,560,409) styleMask:CPTitledWindowMask | CPResizableWindowMask stackTrace:_stackTrace];
                 [CPApp runModalForWindow:reportWindow];
                 break;
     }
@@ -153,25 +153,27 @@ var sharedErrorLoggerInstance = nil;
         [contentView addSubview:informationLabel];
 
         _stackTrace = aStackTrace;
-        var informationTextValue = [CPString stringWithFormat:@"User-Agent: %@\n\nException: %@",
-                                                              navigator.userAgent, [[LPCrashReporter sharedErrorLogger] exception]];
+        var informationTextValue = [CPString stringWithFormat:@"User-Agent: %@\n\nException: %@\n\n Stack Trace: \n %@",
+                                                              navigator.userAgent, [[LPCrashReporter sharedErrorLogger] exception], _stackTrace];
         informationTextField = [LPMultiLineTextField textFieldWithStringValue:informationTextValue placeholder:@"" width:0];
         [informationTextField setEditable:NO];
-        [informationTextField setFrame:CGRectMake(12, 31, CGRectGetWidth(aContentRect) - 24, 100)];
-        [informationTextField setAutoresizingMask:CPViewWidthSizable];
+        [informationTextField setFrame:CGRectMake(12, 31, CGRectGetWidth(aContentRect) - 24, 200)];
+        [informationTextField setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+        [informationTextField setFont:[CPFont fontWithName:@"Courier New" size:11.0]];
         [contentView addSubview:informationTextField];
 
         descriptionLabel = [CPTextField labelWithTitle:@"Please describe what you were doing when the problem happened:"];
-        [descriptionLabel setFrameOrigin:CGPointMake(12,141)];
+        [descriptionLabel setFrameOrigin:CGPointMake(12,241)];
+        [descriptionLabel setAutoresizingMask:CPViewMinYMargin];
         [contentView addSubview:descriptionLabel];
 
         descriptionTextField = [LPMultiLineTextField textFieldWithStringValue:@"" placeholder:@"" width:0];
         [descriptionTextField setFrame:CGRectMake(CGRectGetMinX([informationTextField frame]), CGRectGetMaxY([descriptionLabel frame]) + 1, CGRectGetWidth([informationTextField frame]), 100)];
-        [descriptionTextField setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+        [descriptionTextField setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
         [contentView addSubview:descriptionTextField];
 
         sendButton = [CPButton buttonWithTitle:[CPString stringWithFormat:@"Send to %@", applicationName]];
-        [sendButton setFrameOrigin:CGPointMake(CGRectGetWidth(aContentRect) - CGRectGetWidth([sendButton frame]) - 15, 270)];
+        [sendButton setFrameOrigin:CGPointMake(CGRectGetWidth(aContentRect) - CGRectGetWidth([sendButton frame]) - 15, 370)];
         [sendButton setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
         [sendButton setTarget:self];
         [sendButton setAction:@selector(didClickSendButton:)];
