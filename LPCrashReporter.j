@@ -39,8 +39,9 @@ var sharedErrorLoggerInstance = nil;
 
 @implementation LPCrashReporter : CPObject
 {
-    CPException _exception  @accessors(property=exception);
-    id          _stackTrace @accessors(property=stackTrace);
+    CPException _exception                  @accessors(property=exception);
+    id          _stackTrace                 @accessors(property=stackTrace);
+    BOOL        _shouldInterceptException   @accessors(property=shouldInterceptException);
 }
 
 + (id)sharedErrorLogger
@@ -51,15 +52,28 @@ var sharedErrorLoggerInstance = nil;
     return sharedErrorLoggerInstance;
 }
 
+- (void)init
+{
+    if (self == [super init])
+    {
+        _shouldInterceptException = YES;
+    }
+
+    return self;
+}
+
 - (void)didCatchException:(CPException)anException stackTrace:(id)aStackTrace
 {
     if ([self shouldInterceptException])
     {
+        shouldCatchExceptions = YES;
+
         if (_exception)
             return;
 
         _exception = anException;
         _stackTrace = aStackTrace;
+
 
         var overlayWindow = [[LPCrashReporterOverlayWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
         [overlayWindow setLevel:CPNormalWindowLevel];
@@ -79,11 +93,6 @@ var sharedErrorLoggerInstance = nil;
         shouldCatchExceptions = NO;
         [anException raise];
     }
-}
-
-- (BOOL)shouldInterceptException
-{
-    return YES;
 }
 
 /*
@@ -275,4 +284,15 @@ objj_msgSend = function()
         [[LPCrashReporter sharedErrorLogger] didCatchException:anException stackTrace:printStackTrace({e: anException})];
         return nil;
     }
+}
+
+
+LPCrashReporterDisable = function()
+{
+    [[LPCrashReporter sharedErrorLogger] setShouldInterceptException:NO];
+}
+
+LPCrashReporterEnable = function()
+{
+    [[LPCrashReporter sharedErrorLogger] setShouldInterceptException:YES];
 }
