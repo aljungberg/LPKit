@@ -41,12 +41,20 @@ var immutableDistantFuture = [CPDate distantFuture];
     return 32 - new Date(self.getFullYear(), self.getMonth(), 32).getDate();
 }
 
-- (void)resetToMidnight
++ (CPDate)dateAtMidnight:(CPDate)aDate
 {
-    self.setHours(0);
-    self.setMinutes(0);
-    self.setSeconds(0);
-    self.setMilliseconds(0);
+    var stringDate = [aDate description],
+        dayBefore = aDate.getDay(),
+        newDate = [[CPDate alloc] initWithString:stringDate.substr(0, 10) + ' 00:00:00 ' + stringDate.substr(20) + "+0000"];
+
+    // For some timezones and dates, midnight does not exist. E.g. CLT 2010-10-10 00:00 is actually 2010-10-09 23:00
+    // due to the summer time change (DST). Normally, regardless of the time zone, the shift is 1 hour but there
+    // have been 2 hour shifts too. So inch forward 1 hour at a time until we arrive at the original date. It
+    // won't be midnight but it'll be as close as we can get.
+    while (newDate.getDay() != dayBefore)
+        newDate.setTime(newDate.getTime() + 60 * 60 * 1000);
+
+    return newDate;
 }
 
 @end
@@ -74,7 +82,7 @@ var _startAndEndOfWeekCache = {};
 
     BOOL            highlightCurrentPeriod @accessors;
     BOOL            weekStartsOnMonday @accessors;
-    
+
     id              _delegate @accessors(property=delegate);
     LPCalendarView  calendarView @accessors;
     CPArray         hiddenRows @accessors;
@@ -118,17 +126,17 @@ var _startAndEndOfWeekCache = {};
     // No need to reloadData if the new date is the same as before.
     // ==
     // Future note: Do not use UTC comparison here,
-    // since we reset the date to the relative midnight later on. 
+    // since we reset the date to the relative midnight later on.
     if (date && date.getFullYear() === aDate.getFullYear() && date.getMonth() === aDate.getMonth())
         return;
-    
+
     date = [aDate copy];
 
     if (![aDate isEqualToDate:immutableDistantFuture])
     {
         // Reset the date to the first day of the month & midnight
         date.setDate(1);
-        [date resetToMidnight];
+        date = [CPDate dateAtMidnight:date];
 
         // There must be a better way to do this.
         _firstDay = [date copy];
@@ -137,7 +145,7 @@ var _startAndEndOfWeekCache = {};
         previousMonth = new Date(_firstDay.getTime() - 86400000);
         nextMonth = new Date(_firstDay.getTime() + (([date daysInMonth] + 1) * 86400000));
     }
-    
+
     [self reloadData];
 }
 
@@ -145,16 +153,16 @@ var _startAndEndOfWeekCache = {};
 {
     if (selectionLengthType === aSelectionType)
         return;
-    
+
     selectionLengthType = aSelectionType;
-    
+
     [self reloadData];
 }
 
 - (void)tileSize
 {
     var tileSize = [calendarView currentValueForThemeAttribute:@"tile-size"];
-    
+
     if (tileSize)
         return tileSize
     else
@@ -172,7 +180,7 @@ var _startAndEndOfWeekCache = {};
     {
         if (day == 0)
             day = 6
-        else if(day > 0)
+        else if (day > 0)
             day -= 1
     }
 
@@ -198,12 +206,10 @@ var _startAndEndOfWeekCache = {};
 - (BOOL)dateIsWithinCurrentPeriod:(CPDate)aDate
 {
     var currentPeriod = [CPDate date];
-    [currentPeriod resetToMidnight];
+    currentPeriod = [CPDate dateAtMidnight:currentPeriod];
 
     if (selectionLengthType === LPCalendarDayLength)
-        return (currentPeriod.getDate() === aDate.getDate() &&
-                currentPeriod.getMonth() === aDate.getMonth() &&
-                currentPeriod.getFullYear() === aDate.getFullYear());
+        return [currentPeriod description].substr(0, 10) == [aDate description].substr(0, 10);
 
     if (selectionLengthType === LPCalendarWeekLength)
     {
@@ -219,13 +225,13 @@ var _startAndEndOfWeekCache = {};
 {
     if ([hiddenRows isEqualToArray:hiddenRowsArray])
         return;
-    
+
     hiddenRows = hiddenRowsArray;
-    
+
     var tiles = [self subviews],
         tileIndex = 0,
-        showAllRows = !hiddenRowsArray
-    
+        showAllRows = !hiddenRowsArray;
+
     for (var weekIndex = 0; weekIndex < 6; weekIndex++)
     {
         var shouldHideRow = showAllRows || [hiddenRows indexOfObject:weekIndex] > -1;
@@ -239,7 +245,7 @@ var _startAndEndOfWeekCache = {};
 }
 
 - (void)reloadData
-{   
+{
     if (!date)
         return;
 
@@ -262,9 +268,9 @@ var _startAndEndOfWeekCache = {};
         {
             var dayTile = tiles[tileIndex];
 
-            // Increment to next day
-            currentDate.setTime(currentDate.getTime() + 90000000);
-            [currentDate resetToMidnight];
+            // Increment to next day. Note: due to summer time, some days are longer than 24 hours.
+            currentDate.setTime([CPDate dateAtMidnight:currentDate].getTime() + 25 * 60 * 60 * 1000);
+            currentDate = [CPDate dateAtMidnight:currentDate];
 
             if (!dayTile._isHidden)
             {
@@ -413,12 +419,8 @@ var _startAndEndOfWeekCache = {};
     }
 
     // Replace hours / minutes / seconds
-    var _dates = [aStartDate, anEndDate];
-    for (var i = 0; i < 2; i++)
-    {
-        if (_dates[i])
-            [_dates[i] resetToMidnight];
-    }
+    aStartDate = [CPDate dateAtMidnight:aStartDate];
+    anEndDate = [CPDate dateAtMidnight:anEndDate];
 
     // Swap the dates if startDate is bigger than endDate
     if (aStartDate > anEndDate)
@@ -441,7 +443,7 @@ var _startAndEndOfWeekCache = {};
         var tile = tiles[i],
             tileDate = [tile date];
 
-        [tileDate resetToMidnight];
+        tileDate = [CPDate dateAtMidnight:tileDate];
 
         if (aStartDate && tileDate >= aStartDate && tileDate <= anEndDate)
         {
@@ -574,7 +576,7 @@ var _startAndEndOfWeekCache = {};
 {
     if (date.getTime() === aDate.getTime())
         return;
-    
+
     // Update date
     date.setTime(aDate.getTime());
 
@@ -589,6 +591,7 @@ var _startAndEndOfWeekCache = {};
 - (void)layoutSubviews
 {
     var themeState = [self themeState];
+
     [self setBackgroundColor:[calendarView valueForThemeAttribute:@"tile-bezel-color" inState:themeState]]
 
     [textField setFont:[calendarView valueForThemeAttribute:@"tile-font" inState:themeState]];

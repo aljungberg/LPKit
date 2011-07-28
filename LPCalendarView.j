@@ -106,6 +106,15 @@
     return self;
 }
 
+- (void)setTheme:(CPTheme)aTheme
+{
+    [super setTheme:aTheme];
+
+    [self setNeedsLayout];
+    [firstMonthView setNeedsLayout];
+    [secondMonthView setNeedsLayout];
+}
+
 - (void)selectDate:(CPDate)aDate
 {
     [self setMonth:aDate];
@@ -194,6 +203,16 @@
     [secondMonthView setWeekStartsOnMonday:shouldWeekStartOnMonday];
 }
 
+- (void)setFastForwardEnabled:(BOOL)shouldFastForward
+{
+    [headerView setFastForwardEnabled:shouldFastForward];
+}
+
+- (BOOL)isFastForwardEnabled
+{
+    return [headerView isFastForwardEnabled];
+}
+
 - (void)layoutSubviews
 {
     var width = CGRectGetWidth([self bounds]),
@@ -209,20 +228,30 @@
 
 - (void)didClickPrevButton:(id)sender
 {
-    // We can only slide one month in at a time.
-    if ([slideView isSliding])
-        return;
-
-    [self changeToMonth:[currentMonthView previousMonth]];
+    [self _didClickHeaderButton:sender toMonth:[currentMonthView previousMonth]];
 }
 
 - (void)didClickNextButton:(id)sender
+{
+    [self _didClickHeaderButton:sender toMonth:[currentMonthView nextMonth]];
+}
+
+- (void)_didClickHeaderButton:(LPCalendarHeaderButton) aButton toMonth:(CPDate)aMonth
 {
     // We can only slide one month in at a time.
     if ([slideView isSliding])
         return;
 
-    [self changeToMonth:[currentMonthView nextMonth]];
+    if ([aButton isFastForwarding])
+    {
+        // Rapid change.
+        [self setMonth:aMonth];
+        [currentMonthView makeSelectionWithDate:[fullSelection objectAtIndex:0] end:[fullSelection lastObject]];
+    }
+    else
+    {
+        [self changeToMonth:aMonth];
+    }
 }
 
 - (void)makeSelectionWithDate:(CPDate)aStartDate end:(CPDate)anEndDate

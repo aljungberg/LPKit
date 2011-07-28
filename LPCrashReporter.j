@@ -42,6 +42,9 @@ var sharedErrorLoggerInstance = nil;
     CPException _exception                  @accessors(property=exception);
     id          _stackTrace                 @accessors(property=stackTrace);
     BOOL        _shouldInterceptException   @accessors(property=shouldInterceptException);
+
+    CPString    _alertMessage               @accessors;
+    CPString    _alertInformative           @accessors;
 }
 
 + (id)sharedErrorLogger
@@ -52,13 +55,17 @@ var sharedErrorLoggerInstance = nil;
     return sharedErrorLoggerInstance;
 }
 
-- (void)init
+- (id)init
 {
-    if (self == [super init])
+    if (self = [super init])
     {
-        _shouldInterceptException = YES;
-    }
+        _alertMessage = [CPString stringWithFormat:@"The application %@ crashed unexpectedly.",
+                                                  [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPBundleName"]];
+        _alertInformative = @"Click Reload to load the application again or click Report to send a report to the developer.";
 
+        _shouldInterceptException = YES;
+        install_msgSend_catcher();
+    }
     return self;
 }
 
@@ -66,8 +73,6 @@ var sharedErrorLoggerInstance = nil;
 {
     if ([self shouldInterceptException])
     {
-        shouldCatchExceptions = YES;
-
         if (_exception)
             return;
 
@@ -84,13 +89,12 @@ var sharedErrorLoggerInstance = nil;
         [alert setAlertStyle:CPCriticalAlertStyle];
         [alert addButtonWithTitle:@"Reload"];
         [alert addButtonWithTitle:@"Report..."];
-        [alert setMessageText:[CPString stringWithFormat:@"The application %@ crashed unexpectedly. Click Reload to load the application again or click Report to send a report to the developer.",
-                                                         [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPBundleName"]]];
+        [alert setMessageText:_alertMessage];
+        [alert setInformativeText:_alertInformative];
         [alert runModal];
     }
     else
     {
-        shouldCatchExceptions = NO;
         [anException raise];
     }
 }
@@ -267,32 +271,35 @@ var sharedErrorLoggerInstance = nil;
     Let the monkey patching begin
 */
 
-var original_objj_msgSend = objj_msgSend,
-    shouldCatchExceptions = YES;
+var original_objj_msgSend = objj_msgSend;
 
-objj_msgSend = function()
+var catcher_objj_msgSend = function()
 {
-    if (!shouldCatchExceptions)
-        return original_objj_msgSend.apply(this, arguments);
-
     try
     {
-        return original_objj_msgSend.apply(this, arguments);
+        // Don't catch on recursive objj_msgSend calls - if the exception
+        // doesn't propagate to the top we can assume it was handled properly.
+        // Also, wrapping every single objj_msgSend hits performance hard.
+        objj_msgSend = original_objj_msgSend;
+        return objj_msgSend.apply(this, arguments);
     }
     catch (anException)
     {
+        CPLog.error(anException);
         [[LPCrashReporter sharedErrorLogger] didCatchException:anException stackTrace:printStackTrace({e: anException})];
         return nil;
     }
-}
+    finally
+    {
+        // Reinstall when we exit the top level objj_msgSend.
+        objj_msgSend = catcher_objj_msgSend;
+    }
+};
 
-
-LPCrashReporterDisable = function()
+/*
+    Used by LPCrashReporter for the intial install.
+*/
+var install_msgSend_catcher = function()
 {
-    [[LPCrashReporter sharedErrorLogger] setShouldInterceptException:NO];
-}
-
-LPCrashReporterEnable = function()
-{
-    [[LPCrashReporter sharedErrorLogger] setShouldInterceptException:YES];
-}
+    objj_msgSend = catcher_objj_msgSend;
+};
