@@ -42,7 +42,7 @@ var sharedErrorLoggerInstance = nil;
     CPException _exception                  @accessors(property=exception);
     id          _stackTrace                 @accessors(property=stackTrace);
     BOOL        _shouldInterceptException   @accessors(property=shouldInterceptException);
-
+    CPString    _version                    @accessors(property=version);
     CPString    _alertMessage               @accessors;
     CPString    _alertInformative           @accessors;
 }
@@ -112,7 +112,7 @@ var sharedErrorLoggerInstance = nil;
                 break;
 
         case 1: // Send report
-                var reportWindow = [[LPCrashReporterReportWindow alloc] initWithContentRect:CGRectMake(0,0,560,409) styleMask:CPTitledWindowMask | CPResizableWindowMask stackTrace:_stackTrace];
+                var reportWindow = [[LPCrashReporterReportWindow alloc] initWithContentRect:CGRectMake(0,0,560,409) styleMask:CPTitledWindowMask | CPResizableWindowMask stackTrace:_stackTrace version:_version];
                 [CPApp runModalForWindow:reportWindow];
                 break;
     }
@@ -148,26 +148,29 @@ var sharedErrorLoggerInstance = nil;
 
     CPTextField sendingLabel;
 
+    CPString _version;
     id _stackTrace;
 }
 
-- (void)initWithContentRect:(CGRect)aContentRect styleMask:(id)aStyleMask stackTrace:(id)aStackTrace
+- (void)initWithContentRect:(CGRect)aContentRect styleMask:(id)aStyleMask stackTrace:(id)aStackTrace version:(CPString)aVersion
 {
     if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
     {
+        _version  = aVersion;
+
         var contentView = [self contentView],
             applicationName = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPBundleName"];
 
         [self setMinSize:aContentRect.size];
-        [self setTitle:[CPString stringWithFormat:@"Problem Report for %@", applicationName]];
+        [self setTitle:[CPString stringWithFormat:@"Problem Report for %@)", applicationName]];
 
         informationLabel = [CPTextField labelWithTitle:@"Problem and system information:"];
         [informationLabel setFrameOrigin:CGPointMake(12,12)];
         [contentView addSubview:informationLabel];
 
         _stackTrace = aStackTrace;
-        var informationTextValue = [CPString stringWithFormat:@"User-Agent: %@\n\nException: %@\n\n Stack Trace: \n %@",
-                                                              navigator.userAgent, [[LPCrashReporter sharedErrorLogger] exception], _stackTrace];
+        var informationTextValue = [CPString stringWithFormat:@"User-Agent: %@\n\nException: %@\n\nVersion: %@\n\nStack Trace: \n %@",
+                                                              navigator.userAgent, [[LPCrashReporter sharedErrorLogger] exception], _version, _stackTrace];
         informationTextField = [LPMultiLineTextField textFieldWithStringValue:informationTextValue placeholder:@"" width:0];
         [informationTextField setEditable:NO];
         [informationTextField setFrame:CGRectMake(12, 31, CGRectGetWidth(aContentRect) - 24, 200)];
@@ -235,7 +238,8 @@ var sharedErrorLoggerInstance = nil;
                     'reason': [exception reason],
                     'userAgent': navigator.userAgent,
                     'description': [descriptionTextField stringValue],
-                    'stackTrace': @""+_stackTrace+@""};
+                    'stackTrace': @""+_stackTrace+@"",
+                    'version': _version};
 
     [request setContent:content];
     [CPURLConnection connectionWithRequest:request delegate:self];
