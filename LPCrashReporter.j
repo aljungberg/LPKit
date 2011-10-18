@@ -150,6 +150,7 @@ var sharedErrorLoggerInstance = nil;
 
     CPString _version;
     id _stackTrace;
+    CPString _reportURL;
 }
 
 - (void)initWithContentRect:(CGRect)aContentRect styleMask:(id)aStyleMask stackTrace:(id)aStackTrace version:(CPString)aVersion
@@ -261,13 +262,38 @@ var sharedErrorLoggerInstance = nil;
     [CPApp stopModal];
     [self orderOut:nil];
 
+    _reportURL = aData;
+
     var alert = [[CPAlert alloc] init];
-    [alert setDelegate:[LPCrashReporter sharedErrorLogger]];
+
+    [alert setDelegate:self];
     [alert setAlertStyle:CPInformationalAlertStyle];
     [alert addButtonWithTitle:@"Thanks!"];
-    [alert setMessageText:@"Your report has been sent."];
+    [alert addButtonWithTitle:@"Open Issue"];
+    [alert._informativeLabel setSelectable:YES];
+
+    [alert setMessageText:@"Thank you! Your report has been sent"];
+    [alert setInformativeText:@"You can follow and comment your bug at URL:\n\n" + aData];
     [alert runModal];
 }
+
+- (void)alertDidEnd:(CPAlert)anAlert returnCode:(id)returnCode
+{
+    switch(returnCode)
+    {
+        case 0: // Reload application
+                location.reload();
+                break;
+
+        case 1: // Send report
+                window.open(_reportURL);
+                location.reload();
+                break;
+    }
+}
+
+
+
 
 @end
 
