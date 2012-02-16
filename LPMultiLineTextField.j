@@ -33,7 +33,6 @@ var CPTextFieldInputOwner = nil;
 @implementation LPMultiLineTextField : CPTextField
 {
     id          _DOMTextareaElement;
-    CPString    _stringValue;
     BOOL        _hideOverflow;
 }
 
@@ -225,8 +224,6 @@ var CPTextFieldInputOwner = nil;
 
 - (BOOL)becomeFirstResponder
 {
-    _stringValue = [self stringValue];
-
     [self setThemeState:CPThemeStateEditing];
     [self _updatePlaceholderState];
 
@@ -293,8 +290,7 @@ var CPTextFieldInputOwner = nil;
 @end
 
 
-var LPMultiLineTextFieldStringValueKey = "LPMultiLineTextFieldStringValueKey",
-    LPMultiLineTextFieldScrollableKey = "LPMultiLineTextFieldScrollableKey";
+var LPMultiLineTextFieldScrollableKey = "LPMultiLineTextFieldScrollableKey";
 
 @implementation LPMultiLineTextField (CPCoding)
 
@@ -302,18 +298,11 @@ var LPMultiLineTextFieldStringValueKey = "LPMultiLineTextFieldStringValueKey",
 {
     if (self = [super initWithCoder:aCoder])
     {
-        var strValue = [aCoder decodeObjectForKey:LPMultiLineTextFieldStringValueKey],
-            scrollable = [aCoder decodeBoolForKey:LPMultiLineTextFieldScrollableKey];
-        // only write the string value if there is one so as to avoid
-        // overwriting a value that comes from the cib
-        if (strValue != nil)
-        {
-            [self setObjectValue:strValue];
-        }
+        var scrollable = [aCoder decodeBoolForKey:LPMultiLineTextFieldScrollableKey];
 
         // make sure the textarea scrollbars no inadvertantly disabled with a
         // nil value
-        if (scrollable == NO)
+        if (scrollable === NO)
         {
             [self setScrollable:NO];
         }
@@ -324,7 +313,6 @@ var LPMultiLineTextFieldStringValueKey = "LPMultiLineTextFieldStringValueKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    [aCoder encodeObject:_stringValue forKey:LPMultiLineTextFieldStringValueKey];
     [aCoder encodeBool:(_hideOverflow?NO:YES) forKey:LPMultiLineTextFieldScrollableKey];
 }
 
