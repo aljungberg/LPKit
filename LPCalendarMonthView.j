@@ -403,6 +403,12 @@ var _startAndEndOfWeekCache = {};
 
 - (void)makeSelectionWithDate:(CPDate)aStartDate end:(CPDate)anEndDate
 {
+    if (!aStartDate)
+    {
+        [selection removeAllObjects];
+        return;
+    }
+
     // Avoid having the manipulation below affect the original instance.
     aStartDate = [aStartDate copy];
     anEndDate = [anEndDate copy];
@@ -475,15 +481,15 @@ var _startAndEndOfWeekCache = {};
 		tileSize = [self tileSize];
 
 	var	hLine = function (inMarginTop) {
-		
+
 			CGContextFillRect(context, CGRectMake(0, inMarginTop, width, 1));
-		
-		}, 
-		
+
+		},
+
 		vLine = function (inMarginLeft) {
-			
+
 			CGContextFillRect(context, CGRectMake(inMarginLeft, 0, 1, height));
-			
+
 		};
 
 	CGContextSetFillColor(context, [calendarView currentValueForThemeAttribute:@"grid-shadow-color"]);
