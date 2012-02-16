@@ -41,6 +41,10 @@ var CPTextFieldInputOwner = nil;
 {
     if (!_DOMTextareaElement)
     {
+        // For now we're just hiding the inputElement that's created by
+        // CPTextView, but it should eventually be replaced with the
+        // _DOMTextareaElement to conserve memory.
+        [self _inputElement].style.visibility = @"hidden";
         _DOMTextareaElement = document.createElement("textarea");
         _DOMTextareaElement.style.position = @"absolute";
         _DOMTextareaElement.style.background = @"none";
@@ -50,6 +54,8 @@ var CPTextFieldInputOwner = nil;
         _DOMTextareaElement.style.resize = @"none";
         _DOMTextareaElement.style.padding = @"0";
         _DOMTextareaElement.style.margin = @"0";
+        _DOMTextareaElement.style.overflow = @"auto";
+        _hideOverflow = NO;
 
         _DOMTextareaElement.onblur = function(){
                 [[CPTextFieldInputOwner window] makeFirstResponder:nil];
@@ -62,12 +68,6 @@ var CPTextFieldInputOwner = nil;
     return _DOMTextareaElement;
 }
 
-- (id)initWithFrame:(CGRect)aFrame
-{
-    if (self != [super initWithFrame:aFrame]) return nil;
-    return self;
-}
-
 - (BOOL)isScrollable
 {
    return !_hideOverflow;
@@ -76,12 +76,23 @@ var CPTextFieldInputOwner = nil;
 - (void)setScrollable:(BOOL)shouldScroll
 {
     _hideOverflow = !shouldScroll;
+    // Make sure the textarea element is aware of its scrollable state
+    if (shouldScroll = YES)
+    {
+      [self _DOMTextareaElement].style.overflow = @"auto";
+    }
+    else
+    {
+      [self _DOMTextareaElement].style.overflow = @"hidden";
+    }
 }
 
 
 - (void)setEditable:(BOOL)shouldBeEditable
 {
     [self _DOMTextareaElement].style.cursor = shouldBeEditable ? @"cursor" : @"default";
+    // Prevent the textarea from accepting input when it should be disabled
+    [self _DOMTextareaElement].disabled = !shouldBeEditable;
     [super setEditable:shouldBeEditable];
 }
 
@@ -277,7 +288,6 @@ var CPTextFieldInputOwner = nil;
         _originalPlaceholderString = [self placeholderString];
 
     [super _setCurrentValueIsPlaceholder:isPlaceholder];
-
 }
 
 @end
@@ -292,8 +302,21 @@ var LPMultiLineTextFieldStringValueKey = "LPMultiLineTextFieldStringValueKey",
 {
     if (self = [super initWithCoder:aCoder])
     {
-        [self setStringValue:[aCoder decodeObjectForKey:LPMultiLineTextFieldStringValueKey]];
-        [self setScrollable:[aCoder decodeBoolForKey:LPMultiLineTextFieldScrollableKey]];
+        var strValue = [aCoder decodeObjectForKey:LPMultiLineTextFieldStringValueKey];
+        var scrollable = [aCoder decodeBoolForKey:LPMultiLineTextFieldScrollableKey];
+                // only write the string value if there is one so as to avoid
+                // overwriting a value that comes from the cib
+                if (strValue != nil)
+                {
+                    [self setObjectValue:strValue];
+                }
+
+                // make sure the textarea scrollbars no inadvertantly disabled with a
+                // nil value
+                if (scrollable == NO)
+                {
+                    [self setScrollable:NO];
+                }
     }
     return self;
 }
