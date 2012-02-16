@@ -302,21 +302,21 @@ var LPMultiLineTextFieldStringValueKey = "LPMultiLineTextFieldStringValueKey",
 {
     if (self = [super initWithCoder:aCoder])
     {
-        var strValue = [aCoder decodeObjectForKey:LPMultiLineTextFieldStringValueKey];
-        var scrollable = [aCoder decodeBoolForKey:LPMultiLineTextFieldScrollableKey];
-                // only write the string value if there is one so as to avoid
-                // overwriting a value that comes from the cib
-                if (strValue != nil)
-                {
-                    [self setObjectValue:strValue];
-                }
+        var strValue = [aCoder decodeObjectForKey:LPMultiLineTextFieldStringValueKey],
+            scrollable = [aCoder decodeBoolForKey:LPMultiLineTextFieldScrollableKey];
+        // only write the string value if there is one so as to avoid
+        // overwriting a value that comes from the cib
+        if (strValue != nil)
+        {
+            [self setObjectValue:strValue];
+        }
 
-                // make sure the textarea scrollbars no inadvertantly disabled with a
-                // nil value
-                if (scrollable == NO)
-                {
-                    [self setScrollable:NO];
-                }
+        // make sure the textarea scrollbars no inadvertantly disabled with a
+        // nil value
+        if (scrollable == NO)
+        {
+            [self setScrollable:NO];
+        }
     }
     return self;
 }
