@@ -88,9 +88,9 @@
         [slideView setAnimationDuration:0.2];
         [self addSubview:slideView];
 
-    bezelView = [[CPView alloc] initWithFrame:[slideView frame]];
-    [bezelView setHitTests:NO];
-    [self addSubview:bezelView positioned:CPWindowBelow relativeTo:nil];
+        bezelView = [[CPView alloc] initWithFrame:[slideView frame]];
+        [bezelView setHitTests:NO];
+        [self addSubview:bezelView positioned:CPWindowBelow relativeTo:nil];
 
         firstMonthView = [[LPCalendarMonthView alloc] initWithFrame:[slideView bounds] calendarView:self];
         [firstMonthView setDelegate:self];
@@ -223,8 +223,6 @@
 
     [headerView setFrameSize:CGSizeMake(width, headerHeight)];
     [slideView setFrame:CGRectMake(0, headerHeight, width, CGRectGetHeight([self bounds]) - headerHeight)];
-
-    [slideView setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
 
     [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"],
