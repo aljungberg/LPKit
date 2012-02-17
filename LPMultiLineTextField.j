@@ -56,10 +56,11 @@ var CPTextFieldInputOwner = nil;
         _DOMTextareaElement.style.overflow = @"auto";
         _hideOverflow = NO;
 
-        _DOMTextareaElement.onblur = function(){
-                [[CPTextFieldInputOwner window] makeFirstResponder:nil];
-                CPTextFieldInputOwner = nil;
-            };
+        _DOMTextareaElement.onblur = function()
+        {
+            [[CPTextFieldInputOwner window] makeFirstResponder:nil];
+            CPTextFieldInputOwner = nil;
+        };
 
         self._DOMElement.appendChild(_DOMTextareaElement);
     }
@@ -75,17 +76,9 @@ var CPTextFieldInputOwner = nil;
 - (void)setScrollable:(BOOL)shouldScroll
 {
     _hideOverflow = !shouldScroll;
-    // Make sure the textarea element is aware of its scrollable state
-    if (shouldScroll = YES)
-    {
-      [self _DOMTextareaElement].style.overflow = @"auto";
-    }
-    else
-    {
-      [self _DOMTextareaElement].style.overflow = @"hidden";
-    }
-}
 
+    [self _DOMTextareaElement].style.overflow = shouldScroll ? @"auto" : @"hidden";
+}
 
 - (void)setEditable:(BOOL)shouldBeEditable
 {
@@ -102,9 +95,7 @@ var CPTextFieldInputOwner = nil;
 
 - (void)layoutSubviews
 {
-
     [super layoutSubviews];
-
 
     var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
@@ -153,7 +144,7 @@ var CPTextFieldInputOwner = nil;
     }
 
     if (_hideOverflow)
-        DOMElement.style.overflow=@"hidden";
+        DOMElement.style.overflow = @"hidden";
 }
 
 - (void)scrollWheel:(CPEvent)anEvent
@@ -203,7 +194,6 @@ var CPTextFieldInputOwner = nil;
 
     if (oldStringValue !== [self stringValue])
     {
-
         if (!_isEditing)
         {
             _isEditing = YES;
@@ -300,12 +290,10 @@ var LPMultiLineTextFieldScrollableKey = "LPMultiLineTextFieldScrollableKey";
     {
         var scrollable = [aCoder decodeBoolForKey:LPMultiLineTextFieldScrollableKey];
 
-        // make sure the textarea scrollbars no inadvertantly disabled with a
+        // Make sure the textarea scrollbars no inadvertantly disabled with a
         // nil value
         if (scrollable === NO)
-        {
             [self setScrollable:NO];
-        }
     }
     return self;
 }
@@ -313,7 +301,7 @@ var LPMultiLineTextFieldScrollableKey = "LPMultiLineTextFieldScrollableKey";
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    [aCoder encodeBool:(_hideOverflow?NO:YES) forKey:LPMultiLineTextFieldScrollableKey];
+    [aCoder encodeBool:[self isScrollable] forKey:LPMultiLineTextFieldScrollableKey];
 }
 
 @end
