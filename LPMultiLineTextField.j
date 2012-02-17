@@ -44,10 +44,6 @@ var CPTextFieldInputOwner = nil,
 {
     if (!_DOMTextareaElement)
     {
-        // For now we're just hiding the inputElement that's created by
-        // CPTextView, but it should eventually be replaced with the
-        // _DOMTextareaElement to conserve memory.
-        [self _inputElement].style.visibility = @"hidden";
         _DOMTextareaElement = document.createElement("textarea");
         _DOMTextareaElement.style.position = @"absolute";
         _DOMTextareaElement.style.background = @"none";
