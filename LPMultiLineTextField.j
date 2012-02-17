@@ -28,7 +28,11 @@
  */
 @import <AppKit/CPTextField.j>
 
-var CPTextFieldInputOwner = nil;
+var CPTextFieldInputOwner = nil,
+    CPTextFieldInputResigning = NO,
+    CPTextFieldInputDidBlur = NO,
+    CPTextFieldInputIsActive = NO,
+    CPTextFieldBlurFunction;
 
 @implementation LPMultiLineTextField : CPTextField
 {
@@ -56,11 +60,22 @@ var CPTextFieldInputOwner = nil;
         _DOMTextareaElement.style.overflow = @"auto";
         _hideOverflow = NO;
 
-        _DOMTextareaElement.onblur = function()
+        CPTextFieldBlurFunction = function()
         {
-            [[CPTextFieldInputOwner window] makeFirstResponder:nil];
+            if (!CPTextFieldInputResigning)
+            {
+                [[CPTextFieldInputOwner window] makeFirstResponder:nil];
+                return;
+            }
+
             CPTextFieldInputOwner = nil;
+
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+            CPTextFieldInputDidBlur = YES;
         };
+
+        _DOMTextareaElement.onblur = CPTextFieldBlurFunction;
 
         self._DOMElement.appendChild(_DOMTextareaElement);
     }
@@ -224,6 +239,8 @@ var CPTextFieldInputOwner = nil;
 
     [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
 
+    CPTextFieldInputIsActive = YES;
+
     return YES;
 }
 
@@ -233,7 +250,17 @@ var CPTextFieldInputOwner = nil;
     [self _updatePlaceholderState];
     [self setStringValue:[self stringValue]];
 
-    [self _DOMTextareaElement].blur();
+    CPTextFieldInputResigning = YES;
+
+    if (CPTextFieldInputIsActive)
+        [self _DOMTextareaElement].blur();
+
+    if (!CPTextFieldInputDidBlur)
+        CPTextFieldBlurFunction();
+
+    CPTextFieldInputDidBlur = NO;
+    CPTextFieldInputResigning = NO;
+    CPTextFieldInputIsActive = NO;
 
     //post CPControlTextDidEndEditingNotification
     if (_isEditing)
