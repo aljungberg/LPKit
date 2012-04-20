@@ -217,12 +217,6 @@ var CPTextFieldInputOwner = nil,
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
 
-- (BOOL)performKeyEquivalent:(CPEvent)anEvent
-{
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
-    return YES;
-}
-
 - (BOOL)becomeFirstResponder
 {
     [self setThemeState:CPThemeStateEditing];
