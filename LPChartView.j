@@ -133,8 +133,13 @@
     
     [aGridView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [self replaceSubview:gridView with:aGridView];
-    
+
+    var gridViewFrame = [drawView frame];
+    gridViewFrame.height -= 1;
+    [aGridView setFrame:gridViewFrame];
+
     gridView = aGridView;
+
 }
 
 - (void)setDisplayLabels:(BOOL)shouldDisplayLabels
@@ -233,7 +238,7 @@
     if (_maxValuePosition !== 1.0)
         drawViewSize.height -= maxValueHeightDelta;
 
-    // Make sure we don't do unnecessary word
+    // Make sure we don't do unnecessary work
     if (_currentSize && CGSizeEqualToSize(_currentSize, drawViewSize))
         return _framesSet;
         
