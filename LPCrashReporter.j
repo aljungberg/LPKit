@@ -127,7 +127,7 @@ var sharedErrorLoggerInstance = nil;
     return self;
 }
 
-- (void)didCatchException:(CPException)anException stackTrace:(id)as
+- (void)didCatchException:(CPException)anException stackTrace:(id)aStackTrace
 {
     if ([self shouldInterceptException])
     {
