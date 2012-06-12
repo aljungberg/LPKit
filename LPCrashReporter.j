@@ -43,6 +43,7 @@ var sharedErrorLoggerInstance = nil;
     id          _stackTrace                 @accessors(property=stackTrace);
     BOOL        _shouldInterceptException   @accessors(property=shouldInterceptException);
     CPString    _version                    @accessors(property=version);
+    id          _delegate                   @accessors(property=delegate);
     CPString    _alertMessage               @accessors;
     CPString    _alertInformative           @accessors;
 }
@@ -113,6 +114,7 @@ var sharedErrorLoggerInstance = nil;
 
         case 1: // Send report
                 var reportWindow = [[LPCrashReporterReportWindow alloc] initWithContentRect:CGRectMake(0,0,560,409) styleMask:CPTitledWindowMask | CPResizableWindowMask stackTrace:_stackTrace version:_version];
+                [reportWindow setDelegate:_delegate];
                 [CPApp runModalForWindow:reportWindow];
                 break;
     }
@@ -151,6 +153,8 @@ var sharedErrorLoggerInstance = nil;
     CPString _version;
     id _stackTrace;
     CPString _reportURL;
+
+    id _delegate        @accessors(property=delegate);
 }
 
 - (void)initWithContentRect:(CGRect)aContentRect styleMask:(id)aStyleMask stackTrace:(id)aStackTrace version:(CPString)aVersion
@@ -242,8 +246,15 @@ var sharedErrorLoggerInstance = nil;
                     'stackTrace': @""+_stackTrace+@"",
                     'version': _version};
 
-    [request setContent:content];
-    [CPURLConnection connectionWithRequest:request delegate:self];
+    if (_delegate && [_delegate respondsToSelector:@selector(crashReporter:didCatchException:)])
+    {
+        [_delegate crashReporter:self didCatchException:content];
+    }
+    else
+    {
+        [request setContent:content];
+        [CPURLConnection connectionWithRequest:request delegate:self];
+    }
 }
 
 - (void)didClickCancelButton:(id)sender
