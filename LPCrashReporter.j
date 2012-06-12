@@ -32,20 +32,77 @@
 @import <AppKit/CPAlert.j>
 @import <LPKit/LPURLPostRequest.j>
 @import <LPKit/LPMultiLineTextField.j>
+
 @import "Resources/stacktrace.js"
 
 var sharedErrorLoggerInstance = nil;
 
 
+/*! @ingroup LPKit
+
+    This class let you handle easily the management of crash reports for your application.
+
+    How to use it:
+    You need to call first [LPCrashReporter sharedErrorLogger] to initialize the reporter.
+    Note that any exception occuring in the method where you call this will *not* be caught.
+
+    Then you can configure it:
+
+        [[LPCrashReporter sharedErrorLogger] setVersion:@"1.0.1"];
+        [[LPCrashReporter sharedErrorLogger] setReportURL:[CPURL URLWithString:@"http://myawseomapp/crashreport.php"]];
+
+    Note: the reportURL can also be set by defining a key in your Info.plist called "LPCrashReporterLoggingURL";
+
+    In case of uncaught exception the reporter will freeze your application, and display a dialog to let user a chance
+    to describe what he did and gather some information.
+    Then if user click "Report", the reporter will send to your crash report manager the following request
+
+        ```
+        POST <reportURL> HTTP/1.0
+        <HTTP-HEADERs>
+
+        name=<exception name>
+        reason=<exception reason>
+        userAgent=<navigator userAgent>
+        description=<user description>
+        stackTrace=<the stacktrace>
+        version=<version>
+        ```
+
+    Then your server can return a string as HTTP response body. This body will be shown to the user.
+
+
+    You can manage custom behavior in crash handling by setting a delegate
+
+        [[LPCrashReporter sharedErrorLogger] setDelegate:myObject];
+
+    And implementing
+
+        - (void)didCrashReporter:(LPCrashReporter)aCrashReported catchException:(CPDictionary)someInfo
+
+    The dictionary will contains keys CPException, userAgent, description, stackTrace and version
+
+
+    You can temporarly deactivate the reporter in your code by doing:
+
+        [[LPCrashReporter sharedErrorLogger] setShouldInterceptException:NO];
+
+    And reactivate it by doing:
+
+        [[LPCrashReporter sharedErrorLogger] setShouldInterceptException:YES];
+*/
 @implementation LPCrashReporter : CPObject
 {
     CPException _exception                  @accessors(property=exception);
-    id          _stackTrace                 @accessors(property=stackTrace);
-    BOOL        _shouldInterceptException   @accessors(property=shouldInterceptException);
-    CPString    _version                    @accessors(property=version);
-    id          _delegate                   @accessors(property=delegate);
-    CPString    _alertMessage               @accessors;
-    CPString    _alertInformative           @accessors;
+
+    BOOL        shouldInterceptException    @accessors;
+    CPString    alertInformative            @accessors;
+    CPString    alertMessage                @accessors;
+    CPString    version                     @accessors;
+    CPURL       reportURL                   @accessors;
+    id          delegate                    @accessors;
+
+    id          stackTrace;
 }
 
 + (id)sharedErrorLogger
@@ -60,17 +117,17 @@ var sharedErrorLoggerInstance = nil;
 {
     if (self = [super init])
     {
-        _alertMessage = [CPString stringWithFormat:@"The application %@ crashed unexpectedly.",
+        alertMessage = [CPString stringWithFormat:@"The application %@ crashed unexpectedly.",
                                                   [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPBundleName"]];
-        _alertInformative = @"Click Reload to load the application again or click Report to send a report to the developer.";
+        alertInformative = @"Click Reload to load the application again or click Report to send a report to the developer.";
 
-        _shouldInterceptException = YES;
+        shouldInterceptException = YES;
         install_msgSend_catcher();
     }
     return self;
 }
 
-- (void)didCatchException:(CPException)anException stackTrace:(id)aStackTrace
+- (void)didCatchException:(CPException)anException stackTrace:(id)as
 {
     if ([self shouldInterceptException])
     {
@@ -78,8 +135,7 @@ var sharedErrorLoggerInstance = nil;
             return;
 
         _exception = anException;
-        _stackTrace = aStackTrace;
-
+        stackTrace = aStackTrace;
 
         var overlayWindow = [[LPCrashReporterOverlayWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
         [overlayWindow setLevel:CPNormalWindowLevel];
@@ -90,8 +146,8 @@ var sharedErrorLoggerInstance = nil;
         [alert setAlertStyle:CPCriticalAlertStyle];
         [alert addButtonWithTitle:@"Reload"];
         [alert addButtonWithTitle:@"Report..."];
-        [alert setMessageText:_alertMessage];
-        [alert setInformativeText:_alertInformative];
+        [alert setMessageText:alertMessage];
+        [alert setInformativeText:alertInformative];
         [alert runModal];
     }
     else
@@ -106,15 +162,15 @@ var sharedErrorLoggerInstance = nil;
 
 - (void)alertDidEnd:(CPAlert)anAlert returnCode:(id)returnCode
 {
-    switch(returnCode)
+    switch (returnCode)
     {
         case 0: // Reload application
                 location.reload();
                 break;
 
         case 1: // Send report
-                var reportWindow = [[LPCrashReporterReportWindow alloc] initWithContentRect:CGRectMake(0,0,560,409) styleMask:CPTitledWindowMask | CPResizableWindowMask stackTrace:_stackTrace version:_version];
-                [reportWindow setDelegate:_delegate];
+                var reportWindow = [[LPCrashReporterReportWindow alloc] initWithContentRect:CGRectMake(0,0,560,409) styleMask:CPTitledWindowMask | CPResizableWindowMask stackTrace:stackTrace];
+                [reportWindow setDelegate:delegate];
                 [CPApp runModalForWindow:reportWindow];
                 break;
     }
@@ -139,43 +195,39 @@ var sharedErrorLoggerInstance = nil;
 
 @implementation LPCrashReporterReportWindow : CPWindow
 {
-    CPTextField informationLabel;
-    LPMultiLineTextField informationTextField;
-
-    CPTextField descriptionLabel;
-    LPMultiLineTextField descriptionTextField;
-
-    CPButton sendButton;
-    CPButton cancelButton;
-
-    CPTextField sendingLabel;
-
-    CPString _version;
-    id _stackTrace;
-    CPString _reportURL;
-
-    id _delegate        @accessors(property=delegate);
+    CPButton                cancelButton;
+    CPButton                sendButton;
+    CPString                reportURL;
+    CPTextField             descriptionLabel;
+    CPTextField             informationLabel;
+    CPTextField             sendingLabel;
+    CPURL                   loggingURL;
+    id                      stackTrace;
+    LPMultiLineTextField    descriptionTextField;
+    LPMultiLineTextField    informationTextField;
 }
 
-- (void)initWithContentRect:(CGRect)aContentRect styleMask:(id)aStyleMask stackTrace:(id)aStackTrace version:(CPString)aVersion
+- (void)initWithContentRect:(CGRect)aContentRect styleMask:(id)aStyleMask stackTrace:(id)aStackTrace
 {
     if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
     {
-        _version  = aVersion;
-
         var contentView = [self contentView],
             applicationName = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPBundleName"];
 
         [self setMinSize:aContentRect.size];
-        [self setTitle:[CPString stringWithFormat:@"Problem Report for %@)", applicationName]];
+        [self setTitle:[CPString stringWithFormat:@"Problem Report for %@", applicationName]];
 
         informationLabel = [CPTextField labelWithTitle:@"Problem and system information:"];
         [informationLabel setFrameOrigin:CGPointMake(12,12)];
         [contentView addSubview:informationLabel];
 
-        _stackTrace = aStackTrace;
+        stackTrace = aStackTrace;
         var informationTextValue = [CPString stringWithFormat:@"User-Agent: %@\n\nException: %@\n\nVersion: %@\n\nStack Trace: \n %@",
-                                                              navigator.userAgent, [[LPCrashReporter sharedErrorLogger] exception], _version, _stackTrace];
+                                                              navigator.userAgent,
+                                                              [[LPCrashReporter sharedErrorLogger] exception],
+                                                              [[LPCrashReporter sharedErrorLogger] version],
+                                                              stackTrace];
+
         informationTextField = [LPMultiLineTextField textFieldWithStringValue:informationTextValue placeholder:@"" width:0];
         [informationTextField setEditable:NO];
         [informationTextField setFrame:CGRectMake(12, 31, CGRectGetWidth(aContentRect) - 24, 200)];
@@ -215,7 +267,12 @@ var sharedErrorLoggerInstance = nil;
         [sendingLabel setHidden:YES];
         [contentView addSubview:sendingLabel];
 
+        var userReportURL = [[LPCrashReporter sharedErrorLogger] reportURL],
+            bundleReportURL = [CPURL URLWithString:[[CPBundle mainBundle] objectForInfoDictionaryKey:@"LPCrashReporterLoggingURL"]];
+
+        reportURL = userReportURL || bundleReportURL;
     }
+
     return self;
 }
 
@@ -236,22 +293,30 @@ var sharedErrorLoggerInstance = nil;
 
     [sendingLabel setHidden:NO];
 
-    var loggingURL = [CPURL URLWithString:[[CPBundle mainBundle] objectForInfoDictionaryKey:@"LPCrashReporterLoggingURL"] || @"/"],
-        request = [LPURLPostRequest requestWithURL:loggingURL],
-        exception = [[LPCrashReporter sharedErrorLogger] exception],
-        content = { 'name': [exception name],
-                    'reason': [exception reason],
-                    'userAgent': navigator.userAgent,
-                    'description': [descriptionTextField stringValue],
-                    'stackTrace': @""+_stackTrace+@"",
-                    'version': _version};
+    var delegate = [[LPCrashReporter sharedErrorLogger] delegate],
+        exception = [[LPCrashReporter sharedErrorLogger] exception];
 
-    if (_delegate && [_delegate respondsToSelector:@selector(crashReporter:didCatchException:)])
+
+    if (delegate && [delegate respondsToSelector:@selector(didCrashReporter:catchException:)])
     {
-        [_delegate crashReporter:self didCatchException:content];
+        var content = [CPDictionary dictionaryWithObjectsAndKeys:exception, @"exception",
+                                                                 navigator.userAgent, @"userAgent",
+                                                                 [descriptionTextField stringValue], @"description",
+                                                                 stackTrace, @"stackTrace",
+                                                                 version, @"version"];
+
+        [delegate crashReporter:self didCatchException:content];
     }
     else
     {
+        var request = [LPURLPostRequest requestWithURL:reportURL],
+            content = { 'name': [exception name],
+                        'reason': [exception reason],
+                        'userAgent': navigator.userAgent,
+                        'description': [descriptionTextField stringValue],
+                        'stackTrace': @"" + stackTrace + @"",
+                        'version': version};
+
         [request setContent:content];
         [CPURLConnection connectionWithRequest:request delegate:self];
     }
@@ -273,38 +338,44 @@ var sharedErrorLoggerInstance = nil;
     [CPApp stopModal];
     [self orderOut:nil];
 
-    _reportURL = aData;
+    serverReply = aData;
 
     var alert = [[CPAlert alloc] init];
 
-    [alert setDelegate:self];
     [alert setAlertStyle:CPInformationalAlertStyle];
     [alert addButtonWithTitle:@"Thanks!"];
     [alert addButtonWithTitle:@"Open Issue"];
     [alert._informativeLabel setSelectable:YES];
 
-    [alert setMessageText:@"Thank you! Your report has been sent"];
-    [alert setInformativeText:@"You can follow and comment your bug at URL:\n\n" + aData];
+
+    if (serverReply)
+    {
+        [alert setMessageText:@"Thank you! Your report has been sent"];
+        [alert setInformativeText:serverReply];
+    }
+    else
+    {
+        [alert setMessageText:@"Thanks!"];
+        [alert setMessageText:@"Your report has been sent."];
+    }
+
     [alert runModal];
 }
 
 - (void)alertDidEnd:(CPAlert)anAlert returnCode:(id)returnCode
 {
-    switch(returnCode)
+    switch (returnCode)
     {
         case 0: // Reload application
                 location.reload();
                 break;
 
         case 1: // Send report
-                window.open(_reportURL);
+                window.open(reportURL);
                 location.reload();
                 break;
     }
 }
-
-
-
 
 @end
 
