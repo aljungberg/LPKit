@@ -303,9 +303,10 @@ var sharedErrorLoggerInstance = nil;
                                                                  navigator.userAgent, @"userAgent",
                                                                  [descriptionTextField stringValue], @"description",
                                                                  stackTrace, @"stackTrace",
-                                                                 version, @"version"];
+                                                                 [[LPCrashReporter sharedErrorLogger] version], @"version"];
 
-        [delegate crashReporter:self didCatchException:content];
+        [delegate didCrashReporter:self catchException:content];
+        location.reload();
     }
     else
     {
@@ -315,7 +316,7 @@ var sharedErrorLoggerInstance = nil;
                         'userAgent': navigator.userAgent,
                         'description': [descriptionTextField stringValue],
                         'stackTrace': @"" + stackTrace + @"",
-                        'version': version};
+                        'version': [[LPCrashReporter sharedErrorLogger] version]};
 
         [request setContent:content];
         [CPURLConnection connectionWithRequest:request delegate:self];
