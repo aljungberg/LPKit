@@ -78,7 +78,7 @@ var sharedErrorLoggerInstance = nil;
 
     And implementing
 
-        - (void)didCrashReporter:(LPCrashReporter)aCrashReported catchException:(CPDictionary)someInfo
+        - (void)crashReporter:(LPCrashReporter)aCrashReported didCatchException:(CPDictionary)someInfo
 
     The dictionary will contains keys CPException, userAgent, description, stackTrace and version
 
@@ -297,7 +297,7 @@ var sharedErrorLoggerInstance = nil;
         exception = [[LPCrashReporter sharedErrorLogger] exception];
 
 
-    if (delegate && [delegate respondsToSelector:@selector(didCrashReporter:catchException:)])
+    if (delegate && [delegate respondsToSelector:@selector(crashReporter:didCatchException:)])
     {
         var content = [CPDictionary dictionaryWithObjectsAndKeys:exception, @"exception",
                                                                  navigator.userAgent, @"userAgent",
@@ -305,7 +305,7 @@ var sharedErrorLoggerInstance = nil;
                                                                  stackTrace, @"stackTrace",
                                                                  [[LPCrashReporter sharedErrorLogger] version], @"version"];
 
-        [delegate didCrashReporter:self catchException:content];
+        [delegate crashReporter:self didCatchException:content];
         location.reload();
     }
     else
