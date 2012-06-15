@@ -45,7 +45,7 @@ var immutableDistantFuture = [CPDate distantFuture];
 {
     var stringDate = [aDate description],
         dayBefore = aDate.getDay(),
-        newDate = [[CPDate alloc] initWithString:stringDate.substr(0, 10) + ' 00:00:00 ' + stringDate.substr(20)];
+        newDate = [[CPDate alloc] initWithString:stringDate.substr(0, 10) + ' 00:00:00 ' + stringDate.substr(20) + "+0000"];
 
     // For some timezones and dates, midnight does not exist. E.g. CLT 2010-10-10 00:00 is actually 2010-10-09 23:00
     // due to the summer time change (DST). Normally, regardless of the time zone, the shift is 1 hour but there
