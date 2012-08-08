@@ -71,7 +71,14 @@ var CPTextFieldInputOwner = nil,
             CPTextFieldInputDidBlur = YES;
         };
 
+        CPTextFieldInputFunction = function()
+        {
+            [CPTextFieldInputOwner _setValueFromElement];
+        };
+
         _DOMTextareaElement.onblur = CPTextFieldBlurFunction;
+
+        _DOMTextareaElement.oninput = CPTextFieldInputFunction;
 
         self._DOMElement.appendChild(_DOMTextareaElement);
     }
@@ -200,6 +207,13 @@ var CPTextFieldInputOwner = nil,
 
 - (void)keyUp:(CPEvent)anEvent
 {
+    [self _setValueFromElement];
+
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+}
+
+- (void)_setValueFromElement
+{
     var oldStringValue = [self stringValue];
     [self _setStringValue:[self _DOMTextareaElement].value];
 
@@ -213,14 +227,6 @@ var CPTextFieldInputOwner = nil,
 
         [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
     }
-
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
-}
-
-- (BOOL)performKeyEquivalent:(CPEvent)anEvent
-{
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
-    return YES;
 }
 
 - (BOOL)becomeFirstResponder
