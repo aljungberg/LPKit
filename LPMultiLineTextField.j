@@ -60,7 +60,18 @@ var CPTextFieldInputOwner = nil,
         {
             if (!CPTextFieldInputResigning)
             {
-                [[CPTextFieldInputOwner window] makeFirstResponder:nil];
+
+                // The input element can easily lose focus while we still want it to be focused for various browser reasons.
+                // As long as we're first responder in the key window, the input element should be focused.
+                window.setTimeout(function()
+                    {
+                        if (!CPTextFieldInputOwner || CPTextFieldInputOwner !== self)
+                            return;
+                        var theWindow = [CPTextFieldInputOwner window];
+                        if ([CPApp keyWindow] === theWindow && [theWindow firstResponder] === CPTextFieldInputOwner)
+                            _DOMTextareaElement.focus();
+                    }, 0.0);
+
                 return;
             }
 
@@ -234,7 +245,7 @@ var CPTextFieldInputOwner = nil,
     [self setThemeState:CPThemeStateEditing];
     [self _updatePlaceholderState];
 
-    setTimeout(function(){
+    setTimeout(function() {
         [self _DOMTextareaElement].focus();
         CPTextFieldInputOwner = self;
     }, 0.0);
