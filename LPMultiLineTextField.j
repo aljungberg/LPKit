@@ -60,7 +60,6 @@ var CPTextFieldInputOwner = nil,
         {
             if (!CPTextFieldInputResigning)
             {
-
                 // The input element can easily lose focus while we still want it to be focused for various browser reasons.
                 // As long as we're first responder in the key window, the input element should be focused.
                 window.setTimeout(function()
@@ -168,8 +167,15 @@ var CPTextFieldInputOwner = nil,
     if ([self hasThemeState:CPTextFieldStatePlaceholder])
     {
         DOMElement.value = [self placeholderString];
-    } else {
+    }
+    else if (DOMElement.value != [self stringValue])
+    {
+        // Due to a bug in WebKit we can't change the text area value when the field is focused and
+        // the cursor is placed within the current value. If we do, the text area stops showing its
+        // cursor and stops accepting text (although it still thinks it's focused).
+        DOMElement.blur();
         DOMElement.value = [self stringValue];
+        DOMElement.focus();
     }
 
     if (_hideOverflow)
