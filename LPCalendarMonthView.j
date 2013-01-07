@@ -378,14 +378,14 @@ var _startAndEndOfWeekCache = {};
     // Clicked a date
     if (!currentSelectionIndex || startSelectionIndex == currentSelectionIndex)
     {
-        var calendarView = [[self superview] superview],
+        var currentCalendarView = [[self superview] superview],
             tile = [[self subviews] objectAtIndex:startSelectionIndex],
             tileDate = [tile date],
             tileMonth = tileDate.getMonth();
 
         // Double clicked a date in the current month.
-        if (tileMonth == date.getMonth() && [[CPApp currentEvent] clickCount] === 2 && [calendarView doubleAction])
-            [CPApp sendAction:[calendarView doubleAction] to:[calendarView target] from:calendarView];
+        if (tileMonth == date.getMonth() && [[CPApp currentEvent] clickCount] === 2 && [currentCalendarView doubleAction])
+            [CPApp sendAction:[currentCalendarView doubleAction] to:[currentCalendarView target] from:currentCalendarView];
 
         // Clicked the Previous month
         if (tileMonth == previousMonth.getMonth())
