@@ -30,8 +30,9 @@
 
 @import <Foundation/CPObject.j>
 @import <AppKit/CPAlert.j>
-@import <LPKit/LPURLPostRequest.j>
-@import <LPKit/LPMultiLineTextField.j>
+
+@import "LPURLPostRequest.j"
+@import "LPMultiLineTextField.j"
 
 @import "Resources/stacktrace.js"
 

@@ -28,9 +28,9 @@
  *
  */
 @import <AppKit/CPControl.j>
-@import <LPKit/LPCalendarHeaderView.j>
-@import <LPKit/LPCalendarMonthView.j>
-@import <LPKit/LPSlideView.j>
+@import "LPCalendarHeaderView.j"
+@import "LPCalendarMonthView.j"
+@import "LPSlideView.j"
 
 
 @implementation LPCalendarView : CPView

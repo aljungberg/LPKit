@@ -29,6 +29,7 @@
  */
 @import <AppKit/CPButton.j>
 @import <AppKit/CPControl.j>
+@import <AppKit/CPTextField.j>
 
 var LPMonthNames = [@"January", @"February", @"March", @"April", @"May", @"June", @"July", @"August", @"September", @"October", @"November", @"December"],
     LPDayNamesShort = [@"mon", @"tue", @"wed", @"thu", @"fri", @"sat", @"sun"],

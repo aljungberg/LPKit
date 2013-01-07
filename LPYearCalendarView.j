@@ -17,6 +17,7 @@
 
 @import <AppKit/CPControl.j>
 
+@import "LPArrowButton.j"
 @import "LPSlideView.j"
 
 var LPYearCalendarView_yearCalendar_didMakeSelection_    = 1 << 1;
