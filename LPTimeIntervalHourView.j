@@ -1,23 +1,37 @@
 /*
-*   Filename:         LPHourCalendarView.j
-*   Created:          Wed Dec  5 23:24:54 PST 2012
-*   Author:           Alexandre Wilhelm <alexandre.wilhelm@alcatel-lucent.com>
-*   Description:      CNA Dashboard
-*   Project:          Cloud Network Automation - Nuage - Data Center Service Delivery - IPD
+* LPTimeIntervalHourView.j
+* LPKit
 *
-* Copyright (c) 2011-2012 Alcatel, Alcatel-Lucent, Inc. All Rights Reserved.
+* Created by Alexandre Wilhelm <alexandre.wilhelm@alcatel-lucent.com> on November 7, 2009.
 *
-* This source code contains confidential information which is proprietary to Alcatel.
-* No part of its contents may be used, copied, disclosed or conveyed to any party
-* in any manner whatsoever without prior written permission from Alcatel.
+* The MIT License
 *
-* Alcatel-Lucent is a trademark of Alcatel-Lucent, Inc.
+* Copyright (c) 2009 Ludwig Pettersson
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
 *
 */
 
+
 @import <AppKit/CPView.j>
 
-@implementation LPHourCalendarView : CPView
+@implementation LPTimeIntervalHourView : CPView
 {
     id                  _delegate          @accessors(property=delegate);
 
@@ -26,7 +40,7 @@
     CPStepper           _endStepper;
     CPTextField         _startTextField;
     CPTextField         _endTextField;
-    LPDayCalendarView   _calendarView;
+    LPTimeIntervalDayView   _calendarView;
 }
 
 
@@ -40,7 +54,7 @@
 
 }
 
-/*! Init a new LPHourCalendarView
+/*! Init a new LPTimeIntervalHourView
 */
 - (id)initWithFrame:(CGRect)aRect
 {
@@ -48,7 +62,7 @@
     {
         var date = [CPDate date];
 
-        _calendarView = [[LPDayCalendarView alloc] initWithFrame:CGRectMake(aRect.size.width / 2 - 190 / 2, 0, 189, 166)];
+        _calendarView = [[LPTimeIntervalDayView alloc] initWithFrame:CGRectMake(aRect.size.width / 2 - 190 / 2, 0, 189, 166)];
         [_calendarView selectDate:date];
         [_calendarView setDelegate:self];
         [_calendarView setAllowsMultipleSelection:NO];
@@ -128,12 +142,12 @@
 
 @end
 
-@implementation LPHourCalendarView (LPHourCalendarViewCalendarDelegate)
+@implementation LPTimeIntervalHourView (LPTimeIntervalHourViewCalendarDelegate)
 
 /*! Delegate of the calendar view
     @param aFirsDate
 */
-- (void)calendarView:(LPDayCalendarView)aCalendarView didMakeSelection:(CPDate)aFirstDate
+- (void)calendarView:(LPTimeIntervalDayView)aCalendarView didMakeSelection:(CPDate)aFirstDate
 {
     var dateStart = new Date(aFirstDate.getUTCFullYear(), aFirstDate.getMonth(), aFirstDate.getDate(),[_startStepper doubleValue] , 0, 0, 0),
         dateEnd = new Date(aFirstDate.getUTCFullYear(), aFirstDate.getMonth(), aFirstDate.getDate(), [_endStepper doubleValue] - 1, 59, 59, 99);

@@ -1,17 +1,30 @@
 /*
-*   Filename:         LPYearCalendarView.j
-*   Created:          Mon Nov 19 11:42:42 PST 2012
-*   Author:           Alexandre Wilhelm <alexandre.wilhelm@alcatel-lucent.com>
-*   Description:      CNA Dashboard
-*   Project:          Cloud Network Automation - Nuage - Data Center Service Delivery - IPD
+* LPTimeIntervalYearView.j
+* LPKit
 *
-* Copyright (c) 2011-2012 Alcatel, Alcatel-Lucent, Inc. All Rights Reserved.
+* Created by Alexandre Wilhelm <alexandre.wilhelm@alcatel-lucent.com> on November 7, 2009.
 *
-* This source code contains confidential information which is proprietary to Alcatel.
-* No part of its contents may be used, copied, disclosed or conveyed to any party
-* in any manner whatsoever without prior written permission from Alcatel.
+* The MIT License
 *
-* Alcatel-Lucent is a trademark of Alcatel-Lucent, Inc.
+* Copyright (c) 2009 Ludwig Pettersson
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
 *
 */
 
@@ -19,9 +32,9 @@
 
 @import "LPSlideView.j"
 
-var LPYearCalendarView_yearCalendar_didMakeSelection_    = 1 << 1;
+var LPTimeIntervalYearView_yearCalendar_didMakeSelection_    = 1 << 1;
 
-@implementation LPYearCalendarView : CPControl
+@implementation LPTimeIntervalYearView : CPControl
 {
     CPDate                  _year                   @accessors(property=year);
     id                      _yearCalendarDelegate   @accessors(property=delegate);
@@ -33,8 +46,8 @@ var LPYearCalendarView_yearCalendar_didMakeSelection_    = 1 << 1;
     CPTextField             _yearLabel;
     CPView                  _headerMonthCalendar;
     LPSlideView             _slideView;
-    LPArrowButton           _nextButton;
-    LPArrowButton           _prevButton;
+    _LPArrowButton          _nextButton;
+    _LPArrowButton          _prevButton;
     unsigned                _implementedYearCalendarDelegateMethods;
 }
 
@@ -49,7 +62,7 @@ var LPYearCalendarView_yearCalendar_didMakeSelection_    = 1 << 1;
                                                 @"header-weekday-offset", @"header-weekday-label-font", @"header-weekday-label-color", @"header-weekday-label-shadow-color", @"header-weekday-label-shadow-offset"]];
 }
 
-/*! Init a new LPYearCalendarView
+/*! Init a new LPTimeIntervalYearView
 */
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -82,13 +95,13 @@ var LPYearCalendarView_yearCalendar_didMakeSelection_    = 1 << 1;
         [_yearLabel setHitTests:NO];
         [_headerMonthCalendar addSubview:_yearLabel];
 
-        _prevButton = [[LPArrowButton alloc] initWithFrame:CGRectMake(6, 9, 16, 16)];
+        _prevButton = [[_LPArrowButton alloc] initWithFrame:CGRectMake(6, 9, 16, 16)];
         [_prevButton setTarget:self];
         [_prevButton setBordered:NO];
         [_prevButton setAction:@selector(_didClickPreviousButton:)]
         [_headerMonthCalendar addSubview:_prevButton];
 
-        _nextButton = [[LPArrowButton alloc] initWithFrame:CGRectMake(CGRectGetMaxX([self bounds]) - 21, 9, 16, 16)];
+        _nextButton = [[_LPArrowButton alloc] initWithFrame:CGRectMake(CGRectGetMaxX([self bounds]) - 21, 9, 16, 16)];
         [_nextButton setTarget:self];
         [_nextButton setBordered:NO];
         [_nextButton setAction:@selector(_didClickNextButton:)]
@@ -118,7 +131,7 @@ var LPYearCalendarView_yearCalendar_didMakeSelection_    = 1 << 1;
 
     // Look if the delegate implements or not the delegate methods
     if ([_yearCalendarDelegate respondsToSelector:@selector(yearCalendar:didMakeSelection:)])
-        _implementedYearCalendarDelegateMethods |= LPYearCalendarView_yearCalendar_didMakeSelection_;
+        _implementedYearCalendarDelegateMethods |= LPTimeIntervalYearView_yearCalendar_didMakeSelection_;
 
 }
 
@@ -201,7 +214,7 @@ var LPYearCalendarView_yearCalendar_didMakeSelection_    = 1 << 1;
 
 @end
 
-@implementation LPYearCalendarView (LPYearCalendarViewDelegate)
+@implementation LPTimeIntervalYearView (LPTimeIntervalYearViewDelegate)
 
 /*! Delegate of the widget
     @param anIndex, the index selected
@@ -215,7 +228,7 @@ var LPYearCalendarView_yearCalendar_didMakeSelection_    = 1 << 1;
 
     _currentDate = date;
 
-    if (_implementedYearCalendarDelegateMethods & LPYearCalendarView_yearCalendar_didMakeSelection_)
+    if (_implementedYearCalendarDelegateMethods & LPTimeIntervalYearView_yearCalendar_didMakeSelection_)
         [_yearCalendarDelegate yearCalendar:self didMakeSelection:date];
 }
 
@@ -227,7 +240,7 @@ var LPYearCalendarView_yearCalendar_didMakeSelection_    = 1 << 1;
     CPDate             _date            @accessors(property=date);
 
     CPArray            _tiles;
-    LPYearCalendarView _yearCalendar;
+    LPTimeIntervalYearView _yearCalendar;
 }
 
 /*! Init a new _LPContentMonthCalendar
@@ -413,7 +426,7 @@ var LPYearCalendarView_yearCalendar_didMakeSelection_    = 1 << 1;
     BOOL isSelected @accessors(setter=setSelected:);
 
     CPTextField _textField;
-    LPYearCalendarView _yearCalendar;
+    LPTimeIntervalYearView _yearCalendar;
 }
 
 /*! Init a new _LPContentMonthView

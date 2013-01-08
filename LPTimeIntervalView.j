@@ -1,25 +1,38 @@
 /*
-*   Filename:         DateWidget.j
-*   Created:          Fri Nov 16 13:40:31 PST 2012
-*   Author:           Alexandre Wilhelm <alexandre.wilhelm@alcatel-lucent.com>
-*   Description:      CNA Dashboard
-*   Project:          Cloud Network Automation - Nuage - Data Center Service Delivery - IPD
+* LPTimeIntervalView.j
+* LPKit
 *
-* Copyright (c) 2011-2012 Alcatel, Alcatel-Lucent, Inc. All Rights Reserved.
+* Created by Alexandre Wilhelm <alexandre.wilhelm@alcatel-lucent.com> on November 7, 2009.
 *
-* This source code contains confidential information which is proprietary to Alcatel.
-* No part of its contents may be used, copied, disclosed or conveyed to any party
-* in any manner whatsoever without prior written permission from Alcatel.
+* The MIT License
 *
-* Alcatel-Lucent is a trademark of Alcatel-Lucent, Inc.
+* Copyright (c) 2009 Ludwig Pettersson
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
 *
 */
 
-@import "LPHourCalendarView.j"
-@import "LPYearCalendarView.j"
-@import "LPDayCalendarView.j"
-@import "LPMonthCalendarView.j"
-@import "LPYearCalendarView.j"
+@import "LPTimeIntervalHourView.j"
+@import "LPTimeIntervalYearView.j"
+@import "LPTimeIntervalDayView.j"
+@import "LPTimeIntervalMonthView.j"
+@import "LPTimeIntervalYearView.j"
 
 var LPTimeIntervalView_timeIntervalView_didSelectStartDate_endDate_intervalType_    = 1 << 1;
 
@@ -36,10 +49,10 @@ LPIntervalTypeHour    = 4;
     id                      _timeIntervalViewDelegate                    @accessors(property=delegate);
     int                     _intervalType                                @accessors(property=intervalType);
 
-    LPHourCalendarView      _calendarHourView;
-    LPDayCalendarView       _calendarView;
-    LPMonthCalendarView     _monthCalendarView;
-    LPYearCalendarView      _yearCalendarView;
+    LPTimeIntervalHourView      _calendarHourView;
+    LPTimeIntervalDayView       _calendarView;
+    LPTimeIntervalMonthView     _monthCalendarView;
+    LPTimeIntervalYearView      _yearCalendarView;
     unsigned                _implementedTimeIntervalViewDelegateMethods;
 }
 
@@ -58,25 +71,25 @@ LPIntervalTypeHour    = 4;
 
         _borderColor = [CPColor clearColor];
 
-        _calendarHourView = [[LPHourCalendarView alloc] initWithFrame:CGRectMake(aRect.size.width / 2 - 190 / 2, 0, 189, 205)];
+        _calendarHourView = [[LPTimeIntervalHourView alloc] initWithFrame:CGRectMake(aRect.size.width / 2 - 190 / 2, 0, 189, 205)];
         [_calendarHourView setDelegate:self];
         [_calendarHourView setHidden:NO];
         [self addSubview:_calendarHourView];
 
-        _calendarView = [[LPDayCalendarView alloc] initWithFrame:CGRectMake(aRect.size.width / 2 - 190 / 2, 0, 189, 166)];
+        _calendarView = [[LPTimeIntervalDayView alloc] initWithFrame:CGRectMake(aRect.size.width / 2 - 190 / 2, 0, 189, 166)];
         [_calendarView selectDate:date];
         [_calendarView setDelegate:self];
         [_calendarView setAllowsMultipleSelection:NO];
         [_calendarView setHidden:YES];
         [self addSubview:_calendarView];
 
-        _monthCalendarView = [[LPMonthCalendarView alloc] initWithFrame:CGRectMake(aRect.size.width / 2 - 190 / 2, 0, 189, 168)];
+        _monthCalendarView = [[LPTimeIntervalMonthView alloc] initWithFrame:CGRectMake(aRect.size.width / 2 - 190 / 2, 0, 189, 168)];
         [_monthCalendarView setDelegate:self];
         [_monthCalendarView setHidden:YES];
         [_monthCalendarView setYear:date];
         [self addSubview:_monthCalendarView];
 
-        _yearCalendarView = [[LPYearCalendarView alloc] initWithFrame:CGRectMake(aRect.size.width / 2 - 190 / 2, 0, 189, 168)];
+        _yearCalendarView = [[LPTimeIntervalYearView alloc] initWithFrame:CGRectMake(aRect.size.width / 2 - 190 / 2, 0, 189, 168)];
         [_yearCalendarView setDelegate:self];
         [_yearCalendarView setHidden:YES];
         [_yearCalendarView setYear:date];
@@ -293,7 +306,7 @@ LPIntervalTypeHour    = 4;
     @param aFirstDate the firstDate
     @param anEndDate the endDate
 */
-- (void)hourCalendarView:(LPHourCalendarView)aCalendarView didMakeSelection:(CPDate)aFirstDate enDate:(CPDate)anEndDate
+- (void)hourCalendarView:(LPTimeIntervalHourView)aCalendarView didMakeSelection:(CPDate)aFirstDate enDate:(CPDate)anEndDate
 {
     [self _didSelectStartDate:aFirstDate endDate:anEndDate];
 }
@@ -302,7 +315,7 @@ LPIntervalTypeHour    = 4;
     @param aCalendarView the calendarView
     @param aFirstDate the firstDate
 */
-- (void)calendarView:(LPDayCalendarView)aCalendarView didMakeSelection:(CPDate)aDate
+- (void)calendarView:(LPTimeIntervalDayView)aCalendarView didMakeSelection:(CPDate)aDate
 {
     [self _didSelectStartDate:[self _intervalForFirstDay:aDate] endDate:[self _intervalForEndDay:aDate]];
 }
@@ -311,7 +324,7 @@ LPIntervalTypeHour    = 4;
     @param aMonthCalendarView the monthCalendar
     @param aDate the date
 */
-- (void)monthCalendarView:(LPMonthCalendarView)aMonthCalendarView didMakeSelection:(CPDate)aDate
+- (void)monthCalendarView:(LPTimeIntervalMonthView)aMonthCalendarView didMakeSelection:(CPDate)aDate
 {
      [self _didMakeSelectionInterval:aDate];
      //[_calendarView selectDate:aDate];
@@ -321,7 +334,7 @@ LPIntervalTypeHour    = 4;
     @param anYearCalendarView the yearCalendar
     @param aDate the date
 */
-- (void)yearCalendar:(LPYearCalendarView)anYearCalendarView didMakeSelection:(CPDate)aDate
+- (void)yearCalendar:(LPTimeIntervalYearView)anYearCalendarView didMakeSelection:(CPDate)aDate
 {
      [self _didMakeSelectionInterval:aDate];
 }

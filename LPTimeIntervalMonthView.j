@@ -1,29 +1,42 @@
 /*
-*   Filename:         LPMonthCalendarView.j
-*   Created:          Mon Nov 19 11:42:18 PST 2012
-*   Author:           Alexandre Wilhelm <alexandre.wilhelm@alcatel-lucent.com>
-*   Description:      CNA Dashboard
-*   Project:          Cloud Network Automation - Nuage - Data Center Service Delivery - IPD
+* LPTimeIntervalMonthView.j
+* LPKit
 *
-* Copyright (c) 2011-2012 Alcatel, Alcatel-Lucent, Inc. All Rights Reserved.
+* Created by Alexandre Wilhelm <alexandre.wilhelm@alcatel-lucent.com> on November 7, 2009.
 *
-* This source code contains confidential information which is proprietary to Alcatel.
-* No part of its contents may be used, copied, disclosed or conveyed to any party
-* in any manner whatsoever without prior written permission from Alcatel.
+* The MIT License
 *
-* Alcatel-Lucent is a trademark of Alcatel-Lucent, Inc.
+* Copyright (c) 2009 Ludwig Pettersson
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
 *
 */
 
 @import <AppKit/CPControl.j>
 @import <AppKit/CPView.j>
 
-@import "LPArrowButton.j"
+@import "_LPArrowButton.j"
 @import "LPSlideView.j"
 
-var LPMonthCalendarView_monthCalendarView_didMakeSelection_    = 1 << 1;
+var LPTimeIntervalMonthView_monthCalendarView_didMakeSelection_    = 1 << 1;
 
-@implementation LPMonthCalendarView : CPControl
+@implementation LPTimeIntervalMonthView : CPControl
 {
     CPDate                  _year                   @accessors(property=year);
     id                      _monthCalendarDelegate  @accessors(property=delegate);
@@ -35,8 +48,8 @@ var LPMonthCalendarView_monthCalendarView_didMakeSelection_    = 1 << 1;
     CPTextField             _yearLabel;
     CPView                  _headerMonthCalendar;
     LPSlideView             _slideView;
-    LPArrowButton           _nextButton;
-    LPArrowButton           _prevButton;
+    _LPArrowButton          _nextButton;
+    _LPArrowButton          _prevButton;
     unsigned                _implementedMonthCalendarDelegateMethods;
 }
 
@@ -53,7 +66,7 @@ var LPMonthCalendarView_monthCalendarView_didMakeSelection_    = 1 << 1;
 
 }
 
-/*! Init a new LPMonthCalendarView
+/*! Init a new LPTimeIntervalMonthView
 */
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -86,13 +99,13 @@ var LPMonthCalendarView_monthCalendarView_didMakeSelection_    = 1 << 1;
         [_yearLabel setHitTests:NO];
         [_headerMonthCalendar addSubview:_yearLabel];
 
-        _prevButton = [[LPArrowButton alloc] initWithFrame:CGRectMake(6, 9, 16, 16)];
+        _prevButton = [[_LPArrowButton alloc] initWithFrame:CGRectMake(6, 9, 16, 16)];
         [_prevButton setTarget:self];
         [_prevButton setBordered:NO];
         [_prevButton setAction:@selector(_didClickPreviousButton:)]
         [_headerMonthCalendar addSubview:_prevButton];
 
-        _nextButton = [[LPArrowButton alloc] initWithFrame:CGRectMake(CGRectGetMaxX([self bounds]) - 21, 9, 16, 16)];
+        _nextButton = [[_LPArrowButton alloc] initWithFrame:CGRectMake(CGRectGetMaxX([self bounds]) - 21, 9, 16, 16)];
         [_nextButton setTarget:self];
         [_nextButton setBordered:NO];
         [_nextButton setAction:@selector(_didClickNextButton:)]
@@ -121,7 +134,7 @@ var LPMonthCalendarView_monthCalendarView_didMakeSelection_    = 1 << 1;
 
     // Look if the delegate implements or not the delegate methods
     if ([_monthCalendarDelegate respondsToSelector:@selector(monthCalendarView:didMakeSelection:)])
-        _implementedMonthCalendarDelegateMethods |= LPMonthCalendarView_monthCalendarView_didMakeSelection_;
+        _implementedMonthCalendarDelegateMethods |= LPTimeIntervalMonthView_monthCalendarView_didMakeSelection_;
 
 }
 
@@ -204,7 +217,7 @@ var LPMonthCalendarView_monthCalendarView_didMakeSelection_    = 1 << 1;
 
 @end
 
-@implementation LPMonthCalendarView (LPMonthCalendarViewDelegate)
+@implementation LPTimeIntervalMonthView (LPTimeIntervalMonthViewDelegate)
 
 /*! Delegate of the widget
     @param anIndex, the index selected
@@ -217,7 +230,7 @@ var LPMonthCalendarView_monthCalendarView_didMakeSelection_    = 1 << 1;
     var date = new Date([_yearLabel stringValue],anIndex,_year.getDate());
     _currentDate = date;
 
-    if (_implementedMonthCalendarDelegateMethods & LPMonthCalendarView_monthCalendarView_didMakeSelection_)
+    if (_implementedMonthCalendarDelegateMethods & LPTimeIntervalMonthView_monthCalendarView_didMakeSelection_)
         [_monthCalendarDelegate monthCalendarView:self didMakeSelection:date];
 }
 
@@ -227,14 +240,14 @@ var LPMonthNames = [@"Jan", @"Feb", @"Mar", @"Apr", @"May", @"June", @"July", @"
 
 @implementation _LPContentMonthCalendar : CPView
 {
-    LPMonthCalendarView _monthCalendar;
+    LPTimeIntervalMonthView _monthCalendar;
 }
 
 /*! Init a new _LPContentMonthCalendar
     @param aFrame
     @param aMonthCalendar a monthcalendar
 */
-- (id)initWithFrame:(CGRect)aFrame withMonthCalendar:(LPMonthCalendarView)aMonthCalendar
+- (id)initWithFrame:(CGRect)aFrame withMonthCalendar:(LPTimeIntervalMonthView)aMonthCalendar
 {
     if (self = [super initWithFrame:aFrame])
     {
@@ -405,14 +418,14 @@ var LPMonthNames = [@"Jan", @"Feb", @"Mar", @"Apr", @"May", @"June", @"July", @"
     BOOL isSelected @accessors(setter=setSelected:);
 
     CPTextField _textField;
-    LPMonthCalendarView _monthCalendar;
+    LPTimeIntervalMonthView _monthCalendar;
 }
 
 /*! Init a new _LPContentMonthView
     @param aFrame a frame
     @param aMonthCalendar a monthCalendar
 */
-- (id)initWithFrame:(CGRect)aFrame withMonthCalendar:(LPMonthCalendarView)aMonthCalendar
+- (id)initWithFrame:(CGRect)aFrame withMonthCalendar:(LPTimeIntervalMonthView)aMonthCalendar
 {
     if (self = [super initWithFrame:aFrame])
     {
