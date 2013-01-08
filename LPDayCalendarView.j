@@ -35,65 +35,13 @@
 
 }
 
-/*! Themed the calendar
-*/
-- (void)themedCalendarView
-{
-    var bundle = [CPBundle bundleForClass:[self class]];
-
-    [self setValue:[CPColor clearColor] forThemeAttribute:@"grid-color"];
-    [self setValue:[CPColor clearColor] forThemeAttribute:@"grid-shadow-color"]
-
-    // Header View
-    [self setValue:40 forThemeAttribute:@"header-height" inState:CPThemeStateNormal];
-    [self setValue:[CPFont boldSystemFontOfSize:11.0] forThemeAttribute:@"header-font" inState:CPThemeStateNormal];
-    [self setValue:[CPColor colorWithHexString:@"333"] forThemeAttribute:@"header-text-color" inState:CPThemeStateNormal];
-    [self setValue:[CPColor whiteColor] forThemeAttribute:@"header-text-shadow-color" inState:CPThemeStateNormal];
-    [self setValue:CGSizeMake(1.0, 1.0) forThemeAttribute:@"header-text-shadow-offset" inState:CPThemeStateNormal];
-    [self setValue:CPCenterTextAlignment forThemeAttribute:@"header-alignment" inState:CPThemeStateNormal];
-
-    // Arrows
-    [self setValue:CGSizeMake(10, 7) forThemeAttribute:@"header-button-offset" inState:CPThemeStateNormal];
-    [self setValue:[CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"LPCalendar/previous.png"] size:CGSizeMake(16.0, 16.0)]] forThemeAttribute:@"header-prev-button-image" inState:CPThemeStateNormal];
-    [self setValue:[CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"LPCalendar/next.png"] size:CGSizeMake(16.0, 16.0)]] forThemeAttribute:@"header-next-button-image" inState:CPThemeStateNormal];
-
-    // Weekday labels
-    [self setValue:25 forThemeAttribute:@"header-weekday-offset" inState:CPThemeStateNormal];
-    [self setValue:[CPFont systemFontOfSize:9.0] forThemeAttribute:@"header-weekday-label-font" inState:CPThemeStateNormal];
-    [self setValue:[CPColor colorWithWhite:0 alpha:0.57] forThemeAttribute:@"header-weekday-label-color" inState:CPThemeStateNormal];
-    [self setValue:[CPColor colorWithWhite:1 alpha:0.8] forThemeAttribute:@"header-weekday-label-shadow-color" inState:CPThemeStateNormal];
-    [self setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"header-weekday-label-shadow-offset" inState:CPThemeStateNormal];
-
-    // Day Tile View
-    [self setValue:CGSizeMake(27, 21) forThemeAttribute:@"tile-size" inState:CPThemeStateNormal];
-    [self setValue:[CPFont boldSystemFontOfSize:11.0] forThemeAttribute:@"tile-font" inState:CPThemeStateNormal];
-    [self setValue:[CPColor colorWithHexString:@"333"] forThemeAttribute:@"tile-text-color" inState:CPThemeStateNormal];
-    [self setValue:[CPColor colorWithWhite:1 alpha:0.8] forThemeAttribute:@"tile-text-shadow-color" inState:CPThemeStateNormal];
-    [self setValue:CGSizeMake(1.0, 1.0) forThemeAttribute:@"tile-text-shadow-offset" inState:CPThemeStateNormal];
-
-    // Highlighted
-    [self setValue:[CPColor colorWithHexString:@"555"] forThemeAttribute:@"tile-text-color" inState:CPThemeStateHighlighted];
-
-    // Selected
-    [self setValue:[CPColor colorWithHexString:@"4A89E3"] forThemeAttribute:@"tile-text-color" inState:CPThemeStateSelected];
-    [self setValue:[CPColor clearColor] forThemeAttribute:@"tile-text-shadow-color" inState:CPThemeStateSelected];
-
-    // Disabled
-    [self setValue:[CPColor colorWithWhite:0 alpha:0.3] forThemeAttribute:@"tile-text-color" inState:CPThemeStateDisabled];
-
-    // Disabled & Selected (if that makes any sense.)
-    [self setValue:[CPColor colorWithWhite:0 alpha:0.4] forThemeAttribute:@"tile-text-color" inState:CPThemeStateSelected | CPThemeStateDisabled];
-    [self setValue:[CPColor clearColor] forThemeAttribute:@"tile-text-shadow-color" inState:CPThemeStateSelected | CPThemeStateDisabled];
-
-}
-
 /*! Init an new themed instance of LPDayCalendarView
 */
 - (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {
-        [self themedCalendarView];
+        [self selectDate:[CPDate date]];
     }
     return self;
 }

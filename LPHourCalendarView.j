@@ -29,6 +29,17 @@
     LPDayCalendarView   _calendarView;
 }
 
+
+/*! Theme attrbitues
+*/
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPNull null],[CPNull null], [CPNull null], [CPNull null]]
+                                       forKeys:[@"header-font", @"header-text-color", @"header-text-shadow-color", @"header-text-shadow-offset"]];
+
+
+}
+
 /*! Init a new LPHourCalendarView
 */
 - (id)initWithFrame:(CGRect)aRect
@@ -52,11 +63,6 @@
 
         _startTextField = [CPTextField labelWithTitle:@"Start : 0"];
 
-        [_startTextField setFont:[_calendarView valueForThemeAttribute:@"header-font" inState:CPThemeStateNormal]];
-        [_startTextField setTextColor:[_calendarView valueForThemeAttribute:@"header-text-color" inState:CPThemeStateNormal]];
-        [_startTextField setTextShadowColor:[_calendarView valueForThemeAttribute:@"header-text-shadow-color" inState:CPThemeStateNormal]];
-        [_startTextField setTextShadowOffset:[_calendarView valueForThemeAttribute:@"header-text-shadow-offset" inState:CPThemeStateNormal]];
-
         [_startTextField setFrameOrigin:CGPointMake(5,175 + [_startStepper frameSize].height / 2 - [_startTextField frameSize].height / 2)];
         [_startStepper setFrameOrigin:CGPointMake([_startTextField frameSize].width + 12,175)];
 
@@ -68,11 +74,6 @@
         [_endStepper setValueWraps:NO];
 
         _endTextField = [CPTextField labelWithTitle:@"End : 24"];
-
-        [_endTextField setFont:[_calendarView valueForThemeAttribute:@"header-font" inState:CPThemeStateNormal]];
-        [_endTextField setTextColor:[_calendarView valueForThemeAttribute:@"header-text-color" inState:CPThemeStateNormal]];
-        [_endTextField setTextShadowColor:[_calendarView valueForThemeAttribute:@"header-text-shadow-color" inState:CPThemeStateNormal]];
-        [_endTextField setTextShadowOffset:[_calendarView valueForThemeAttribute:@"header-text-shadow-offset" inState:CPThemeStateNormal]];
 
         [_endStepper setFrameOrigin:CGPointMake(aRect.size.width - 5 - [_endStepper frameSize].width, 175)];
         [_endTextField setFrameOrigin:CGPointMake([_endStepper frameOrigin].x - [_endTextField frameSize].width, 175 + [_endStepper frameSize].height / 2 - [_endTextField frameSize].height / 2)];
@@ -108,6 +109,21 @@
 
     [_endTextField setStringValue:[CPString stringWithFormat:@"End : %i" , [sender doubleValue]]];
     [_endTextField sizeToFit];
+}
+
+-(void)layoutSubviews
+{
+    var themeState = [self themeState];
+
+    [_endTextField setFont:[self valueForThemeAttribute:@"header-font" inState:themeState]];
+    [_endTextField setTextColor:[self valueForThemeAttribute:@"header-text-color" inState:themeState]];
+    [_endTextField setTextShadowColor:[self valueForThemeAttribute:@"header-text-shadow-color" inState:themeState]];
+    [_endTextField setTextShadowOffset:[self valueForThemeAttribute:@"header-text-shadow-offset" inState:themeState]];
+
+    [_startTextField setFont:[self valueForThemeAttribute:@"header-font" inState:CPThemeStateNormal]];
+    [_startTextField setTextColor:[self valueForThemeAttribute:@"header-text-color" inState:CPThemeStateNormal]];
+    [_startTextField setTextShadowColor:[self valueForThemeAttribute:@"header-text-shadow-color" inState:CPThemeStateNormal]];
+    [_startTextField setTextShadowOffset:[self valueForThemeAttribute:@"header-text-shadow-offset" inState:CPThemeStateNormal]];
 }
 
 @end

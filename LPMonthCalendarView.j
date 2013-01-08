@@ -53,45 +53,6 @@ var LPMonthCalendarView_monthCalendarView_didMakeSelection_    = 1 << 1;
 
 }
 
-/*! Themed the calendar
-*/
-- (void)themedCalendarView
-{
-    [self setValue:[CPColor clearColor] forThemeAttribute:@"grid-color"];
-    [self setValue:[CPColor clearColor] forThemeAttribute:@"grid-shadow-color"]
-
-    // Header View
-    [self setValue:40 forThemeAttribute:@"header-height" inState:CPThemeStateNormal];
-    [self setValue:[CPFont boldSystemFontOfSize:11.0] forThemeAttribute:@"header-font" inState:CPThemeStateNormal];
-    [self setValue:[CPColor colorWithHexString:@"333"] forThemeAttribute:@"header-text-color" inState:CPThemeStateNormal];
-    [self setValue:[CPColor whiteColor] forThemeAttribute:@"header-text-shadow-color" inState:CPThemeStateNormal];
-    [self setValue:CGSizeMake(1.0, 1.0) forThemeAttribute:@"header-text-shadow-offset" inState:CPThemeStateNormal];
-    [self setValue:CPCenterTextAlignment forThemeAttribute:@"header-alignment" inState:CPThemeStateNormal];
-
-
-
-    // Day Tile View
-    [self setValue:CGSizeMake(27, 21) forThemeAttribute:@"tile-size" inState:CPThemeStateNormal];
-    [self setValue:[CPFont boldSystemFontOfSize:11.0] forThemeAttribute:@"tile-font" inState:CPThemeStateNormal];
-    [self setValue:[CPColor colorWithHexString:@"333"] forThemeAttribute:@"tile-text-color" inState:CPThemeStateNormal];
-    [self setValue:[CPColor colorWithWhite:1 alpha:0.8] forThemeAttribute:@"tile-text-shadow-color" inState:CPThemeStateNormal];
-    [self setValue:CGSizeMake(1.0, 1.0) forThemeAttribute:@"tile-text-shadow-offset" inState:CPThemeStateNormal];
-
-    // Highlighted
-    [self setValue:[CPColor colorWithHexString:@"4A89E3"] forThemeAttribute:@"tile-text-color" inState:CPThemeStateHighlighted];
-
-    // Selected
-    [self setValue:[CPColor colorWithHexString:@"4A89E3"] forThemeAttribute:@"tile-text-color" inState:CPThemeStateSelected];
-    [self setValue:[CPColor clearColor] forThemeAttribute:@"tile-text-shadow-color" inState:CPThemeStateSelected];
-
-    // Disabled
-    [self setValue:[CPColor colorWithWhite:0 alpha:0.3] forThemeAttribute:@"tile-text-color" inState:CPThemeStateDisabled];
-
-    // Disabled & Selected (if that makes any sense.)
-    [self setValue:[CPColor colorWithWhite:0 alpha:0.4] forThemeAttribute:@"tile-text-color" inState:CPThemeStateSelected | CPThemeStateDisabled];
-    [self setValue:[CPColor clearColor] forThemeAttribute:@"tile-text-shadow-color" inState:CPThemeStateSelected | CPThemeStateDisabled];
-}
-
 /*! Init a new LPMonthCalendarView
 */
 - (id)initWithFrame:(CGRect)aFrame
@@ -99,8 +60,6 @@ var LPMonthCalendarView_monthCalendarView_didMakeSelection_    = 1 << 1;
     if (self = [super initWithFrame:aFrame])
     {
         var bundle = [CPBundle bundleForClass:[self class]];
-
-        [self themedCalendarView];
 
         _headerMonthCalendar = [[CPView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(aFrame), 40)];
         [self addSubview:_headerMonthCalendar];
@@ -130,19 +89,18 @@ var LPMonthCalendarView_monthCalendarView_didMakeSelection_    = 1 << 1;
         _prevButton = [[LPArrowButton alloc] initWithFrame:CGRectMake(6, 9, 16, 16)];
         [_prevButton setTarget:self];
         [_prevButton setBordered:NO];
-        [_prevButton setImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"LPCalendar/previous.png"] size:CGSizeMake(15,15)]];
         [_prevButton setAction:@selector(_didClickPreviousButton:)]
         [_headerMonthCalendar addSubview:_prevButton];
 
         _nextButton = [[LPArrowButton alloc] initWithFrame:CGRectMake(CGRectGetMaxX([self bounds]) - 21, 9, 16, 16)];
         [_nextButton setTarget:self];
         [_nextButton setBordered:NO];
-        [_nextButton setImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"LPCalendar/next.png"] size:CGSizeMake(15,15)]];
         [_nextButton setAction:@selector(_didClickNextButton:)]
         [_nextButton setAutoresizingMask:CPViewMinXMargin];
         [_headerMonthCalendar addSubview:_nextButton];
 
         _currentDate = [CPDate date];
+        [self setYear:[CPDate date]];
     }
     return self;
 }
@@ -239,6 +197,9 @@ var LPMonthCalendarView_monthCalendarView_didMakeSelection_    = 1 << 1;
     [_yearLabel setTextColor:[self valueForThemeAttribute:@"header-text-color" inState:themeState]];
     [_yearLabel setTextShadowColor:[self valueForThemeAttribute:@"header-text-shadow-color" inState:themeState]];
     [_yearLabel setTextShadowOffset:[self valueForThemeAttribute:@"header-text-shadow-offset" inState:themeState]];
+
+    [_nextButton setValue:[self valueForThemeAttribute:@"header-next-button-image" inState:themeState] forThemeAttribute:@"bezel-color" ];
+    [_prevButton setValue:[self valueForThemeAttribute:@"header-prev-button-image" inState:themeState] forThemeAttribute:@"bezel-color" ];
 }
 
 @end
