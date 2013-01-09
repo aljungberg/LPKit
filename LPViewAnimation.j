@@ -46,7 +46,13 @@ LPTestCSSFeature = function(/*CPString*/aFeature)
         return NO;
 
     if (!_tmpDOMElement)
+    {
         _tmpDOMElement = document.createElement("div");
+
+        // objj2 compiler fix with rhino
+        if (!_tmpDOMElement.style)
+            return NO;
+    }
 
     var properties = [aFeature];
 
