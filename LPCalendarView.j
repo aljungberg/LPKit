@@ -47,6 +47,7 @@
 
     id                  _target @accessors(property=target);
     SEL                 _doubleAction @accessors(property=doubleAction);
+    CPView              bezelView;
 }
 
 + (CPString)themeClass
