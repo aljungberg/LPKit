@@ -3,21 +3,21 @@
  * LPKit
  *
  * Created by Ludwig Pettersson on December 6, 2009.
- * 
+ *
  * The MIT License
- * 
+ *
  * Copyright (c) 2009 Ludwig Pettersson
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,9 +25,11 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- * 
+ *
  */
 @import <AppKit/CPView.j>
+@import <AppKit/CPTextField.j>
+
 
 // TODO: These should be ivars, or more likely, theme settings.
 
@@ -40,18 +42,18 @@
     int              fixedMaxValue @accessors;
     int              labelViewHeight @accessors;
     int              drawViewPadding @accessors;
-    
+
     LPChartGridView  gridView @accessors;
-    
+
     LPChartLabelView labelView @accessors(readonly);
     BOOL             displayLabels @accessors;
-    
+
     CPArray          _data;
     int              _maxValue;
-    
+
     CPArray          _framesSet;
     CGSize           _currentSize;
-    
+
     float            _maxValuePosition;
     float            _minValuePosition;
 }
@@ -69,18 +71,18 @@
 {
     _maxValuePosition = 1.0;
     _minValuePosition = 0.0;
-    
+
     gridView = [[LPChartGridView alloc] initWithFrame:CGRectMakeZero()];
     [gridView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [self addSubview:gridView];
-    
+
     var bounds = [self bounds];
-    
+
     labelView = [[LPChartLabelView alloc] initWithFrame:CGRectMake(drawViewPadding, CGRectGetHeight(bounds) - labelViewHeight, CGRectGetWidth(bounds) - (2 * drawViewPadding), labelViewHeight)];
     [self addSubview:labelView];
-    
+
     _currentSize = CGSizeMake(0,0);
-    
+
     fixedMaxValue = 0;
     labelViewHeight = 20;
     drawViewPadding = 5;
@@ -95,32 +97,32 @@
 {
     if (aDrawView === drawView)
         return;
-    
+
     if (drawView)
         [drawView removeFromSuperview];
-    
+
     [self addSubview:aDrawView positioned:CPWindowAbove relativeTo:gridView];
-    
+
     // Got a new drawView
     drawView = aDrawView;
-    
+
     // Resize the drawview to the correct size
     var drawViewFrame = CGRectInset([self bounds], drawViewPadding, drawViewPadding);
-    
+
     // Don't let it draw over the labelView
     if (labelView)
         drawViewFrame.size.height -= CGRectGetHeight([labelView bounds]);
-    
+
     // Update drawView frame & autoresizingmask
     [drawView setFrame:drawViewFrame];
     [drawView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    
+
     // Make drawView 1px higher, so the bottom line can be seen
     drawViewFrame.size.height += 1;
-    
+
     // Update gridview as well
     [gridView setFrame:drawViewFrame];
-    
+
     // Re-draw
     if ([self window])
         [self reloadData];
@@ -130,7 +132,7 @@
 {
     if (gridView === aGridView)
         return;
-    
+
     [aGridView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [self replaceSubview:gridView with:aGridView];
 
@@ -151,17 +153,18 @@
         var drawViewSize = [drawView frame];
         drawViewSize.size.height += CGRectGetHeight([labelView bounds]);
         [drawView setFrame:drawViewSize];
-        
+
         // Remove labelview
         [labelView removeFromSuperview];
     }
     // We should create labels
     else
     {
-        labelView = [[LPChartLabelView alloc] initWithFrame:CGRectMake(0, CGRectGetHeight(aFrame) - labelViewHeight, CGRectGetWidth(aFrame), labelViewHeight)];
+        var frame = [self frame];
+        labelView = [[LPChartLabelView alloc] initWithFrame:CGRectMake(0, CGRectGetHeight(frame) - labelViewHeight, CGRectGetWidth(frame), labelViewHeight)];
         [self addSubview:labelView];
     }
-    
+
     displayLabels = shouldDisplayLabels;
 }
 
@@ -174,7 +177,7 @@
 {
     _maxValuePosition = aMaxValuePosition;
     _minValuePosition = aMinValuePosition;
-    
+
     [[self drawView] setNeedsDisplay:YES];
 }
 
@@ -187,41 +190,41 @@
 {
     if (!dataSource || !drawView)
         return;
-    
+
     // Reset data & max value
     _data = [CPArray array];
     _maxValue = fixedMaxValue;
-    
+
     var numberOfSets = [dataSource numberOfSetsInChart:self];
-    
+
     for (var setIndex = 0; setIndex < numberOfSets; setIndex++)
     {
         var row = [],
             numberOfItems = [dataSource chart:self numberOfValuesInSet:setIndex];
-        
+
         for (var itemIndex = 0; itemIndex < numberOfItems; itemIndex++)
         {
             var value = [dataSource chart:self valueForIndex:itemIndex set:setIndex];
-            
+
             if (value > _maxValue)
                 _maxValue = value;
-            
+
             row.push(value);
         }
-        
+
         _data.push(row);
     }
-    
+
     // Clear the current size of the chart
     // this will force the re-calculation of item frames.
     _currentSize = nil;
-    
+
     // Update grid view
     [gridView setNeedsDisplay:YES];
-    
+
     // Update Label view
     [labelView reloadData];
-    
+
     // Update Draw view
     [drawView setNeedsDisplay:YES];
 }
@@ -230,7 +233,7 @@
 {
     var drawViewSize = [drawView bounds].size,
         maxValueHeightDelta = (1.0 - _maxValuePosition) * drawViewSize.height;
-    
+
     // Restrict drawViewSize according to min value positions
     if (_minValuePosition !== 0.0)
         drawViewSize.height -= _minValuePosition * drawViewSize.height;
@@ -241,21 +244,21 @@
     // Make sure we don't do unnecessary work
     if (_currentSize && CGSizeEqualToSize(_currentSize, drawViewSize))
         return _framesSet;
-        
+
     _currentSize = drawViewSize;
 
     // Reset frames set
     _framesSet = [CPArray array];
-    
+
     if (!sets.length)
         return _framesSet;
-        
+
     // If the chart has no data to display,
     // we set the max value to 1 so that it will
     // at least draw an empty line at the bottom of the chart.
     if (aMaxValue === 0)
         aMaxValue = 1;
-    
+
     var width = drawViewSize.width,
         height = drawViewSize.height - (2 * drawViewPadding),
         numberOfItems = sets[0].length,
@@ -267,39 +270,39 @@
         var items = sets[setIndex],
             currentItemOriginX = 0,
             row = [];
-        
+
         for (var itemIndex = 0; itemIndex < items.length; itemIndex++)
         {
             var value = items[itemIndex],
                 itemFrame = CGRectMake(currentItemOriginX, 0, itemWidth, 0);
-            
+
             // Pad the width of the item if we have any unused width
             if (unusedWidth > 0)
             {
                 itemFrame.size.width++;
                 unusedWidth--;
             }
-            
+
             // Set the height
             itemFrame.size.height = ROUND((value / aMaxValue) * height);
-            
+
             // Set Y Origin
             itemFrame.origin.y = height - CGRectGetHeight(itemFrame) + drawViewPadding;
-            
+
             // Make up for _maxValuePosition if it's set
             if (_maxValuePosition !== 1.0)
                 itemFrame.origin.y += maxValueHeightDelta;
-            
+
             // Save it
             row.push(itemFrame);
-            
+
             // Set the X origin for the next item
             currentItemOriginX += CGRectGetWidth(itemFrame);
         }
-        
+
         _framesSet.push(row);
     }
-    
+
     return _framesSet;
 }
 
@@ -313,17 +316,17 @@
     if (delegate && [delegate respondsToSelector:@selector(chart:didMouseOverItemAtIndex:)])
     {
         var itemFrames = [self itemFrames];
-        
+
         if (!itemFrames.length)
             return;
-            
+
         var firstSet = itemFrames[0],
             locationInDrawView = [drawView convertPoint:[anEvent locationInWindow] fromView:nil];
-    
+
         for (var i = 0; i < firstSet.length; i++)
         {
             var itemFrame = firstSet[i];
-        
+
             if (itemFrame.origin.x <= locationInDrawView.x && (itemFrame.origin.x + itemFrame.size.width) > locationInDrawView.x)
             {
                 [delegate chart:self didMouseOverItemAtIndex:i];
@@ -366,22 +369,22 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
     if (self = [super initWithCoder:aCoder])
     {
         dataSource = [aCoder decodeObjectForKey:LPChartViewDataSourceKey];
-        
+
         gridView = [aCoder decodeObjectForKey:LPChartViewGridViewKey];
         drawView = [aCoder decodeObjectForKey:LPChartViewDrawViewKey];
-        
+
         displayLabels = ![aCoder containsValueForKey:LPChartViewDisplayLabelsKey] || [aCoder decodeObjectForKey:LPChartViewDisplayLabelsKey];
         labelView = [aCoder decodeObjectForKey:LPChartViewLabelViewKey];
-        
+
         _data = [aCoder decodeObjectForKey:LPChartViewDataKey];
         _maxValue = [aCoder decodeIntForKey:LPChartViewMaxValueKey];
-        
+
         _framesSet = [aCoder decodeObjectForKey:LPChartViewFramesSetKey];
         _currentSize = [aCoder decodeSizeForKey:LPChartViewCurrentSizeKey];
-        
+
         _maxValuePosition = [aCoder decodeIntForKey:LPChartViewMaxValuePositionKey];
         _minValuePosition = [aCoder decodeFloatForKey:LPChartViewMinValuePositionKey];
-        
+
         [self _setup];
     }
     return self;
@@ -390,23 +393,23 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeObject:dataSource forKey:LPChartViewDataSourceKey];
     [aCoder encodeObject:drawView forKey:LPChartViewDrawViewKey];
-    
+
     [aCoder encodeObject:gridView forKey:LPChartViewGridViewKey];
-    
+
     [aCoder encodeBool:displayLabels forKey:LPChartViewDisplayLabelsKey];
     [aCoder encodeObject:labelView forKey:LPChartViewLabelViewKey];
-    
+
     [aCoder encodeObject:_data forKey:LPChartViewDataKey];
     [aCoder encodeInt:_maxValue forKey:LPChartViewMaxValueKey];
-    
+
     [aCoder encodeObject:_framesSet forKey:LPChartViewFramesSetKey];
-    
+
     if (_currentSize)
         [aCoder encodeSize:_currentSize forKey:LPChartViewCurrentSizeKey];
-    
+
     [aCoder encodeFloat:_maxValuePosition forKey:LPChartViewMaxValuePositionKey];
     [aCoder encodeFloat:_minValuePosition forKey:LPChartViewMinValuePositionKey];
 }
@@ -437,6 +440,7 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
 
 - (void)drawRect:(CGRect)aRect
 {
+    var itemFrames;
     if (itemFrames = [[self superview] itemFrames])
     {
         var context = [[CPGraphicsContext currentContext] graphicsPort],
@@ -444,9 +448,9 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
             width = CGRectGetWidth(bounds),
             height = CGRectGetHeight(bounds),
             lineWidth = 1;
-    
+
         CGContextSetFillColor(context, gridColor);
-        
+
         // Vertical lines
         if (itemFrames.length)
         {
@@ -457,10 +461,10 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
         }
         else
             CGContextFillRect(context, CGRectMake(0, 0, lineWidth, height));
-    
+
         // Right most line
         CGContextFillRect(context, CGRectMake(width - lineWidth, 0, lineWidth, height));
-    
+
         // Bottom & middle line
         CGContextFillRect(context, CGRectMake(0, height - lineWidth, width, lineWidth));
         CGContextFillRect(context, CGRectMake(0, FLOOR(height / 2), width, lineWidth));
@@ -485,6 +489,7 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
 
 - (void)drawRect:(CGRect)aRect
 {
+    var itemFrames;
     if (itemFrames = [[self superview] itemFrames])
     {
         var context = [[CPGraphicsContext currentContext] graphicsPort];
@@ -496,34 +501,34 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
 {
     // Overwrite this method in your subclass
     // to get complete control of the drawing.
-    
+
     CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4379ca"]);
     CGContextSetLineWidth(context, 2.0);
-    
+
     for (var setIndex = 0; setIndex < aFramesSet.length; setIndex++)
     {
         var items = aFramesSet[setIndex];
-        
+
         // Start path
         CGContextBeginPath(context);
-        
+
         for (var itemIndex = 0; itemIndex < items.length; itemIndex++)
         {
             var itemFrame = items[itemIndex],
                 point = CGPointMake(CGRectGetMidX(itemFrame), CGRectGetMinY(itemFrame));
-            
+
             // Begin path
             if (itemIndex == 0)
                 CGContextMoveToPoint(context, point.x, point.y);
-            
+
             // Add point
             else
                 CGContextAddLineToPoint(context, point.x, point.y);
         }
-        
+
         // Stroke path
         CGContextStrokePath(context);
-        
+
         // Close path
         CGContextClosePath(context);
     }
@@ -535,12 +540,12 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
 @implementation LPChartLabelView : CPView
 {
     LPChartView chart;
-    
+
     id _labelPrototype;
     CPData _labelData;
     CPArray _cachedLabels;
 }
- 
+
 - (id)initWithFrame:(CPRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
@@ -558,7 +563,7 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
     _labelPrototype = aLabelPrototype;
     _labelData = nil;
     _cachedLabels = [CPArray array];
-    
+
     [self reloadData];
 }
 
@@ -571,12 +576,12 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
         if (!_labelData)
             if (_labelPrototype)
                 _labelData = [CPKeyedArchiver archivedDataWithRootObject:_labelPrototype];
-        
+
         var label = [CPKeyedUnarchiver unarchiveObjectWithData:_labelData];
     }
-    
+
     [label setItemIndex:anItemIndex];
-    
+
     return label;
 }
 
@@ -584,23 +589,24 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
 {
     if (chart)
     {
-        var subviews = [self subviews];
-        
+        var subviews = [self subviews],
+            numberOfSubviews;
+
         // Clear any previous labels
         if (numberOfSubviews = subviews.length)
         {
             while (numberOfSubviews--)
             {
                 [subviews[numberOfSubviews] removeFromSuperview];
-                
+
                 if (_labelData)
                     _cachedLabels.push(subviews[numberOfSubviews]);
             }
         }
-        
+
         // Insert new subviews
         var itemFrames = [chart itemFrames];
-        
+
         if (itemFrames && itemFrames.length)
         {
             itemFrames = itemFrames[0];
@@ -611,7 +617,7 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
                 [self addSubview:label];
             }
         }
-        
+
         // Layout subviews
         [self setNeedsLayout];
     }
@@ -625,10 +631,10 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
 - (void)layoutSubviews
 {
     var itemFrames = [chart itemFrames];
-    
+
     if (!itemFrames)
         return;
-    
+
     var subviews = [self subviews],
         numberOfSubviews = subviews.length,
         bounds = [self bounds],
@@ -640,25 +646,23 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
     {
         var subview = subviews[numberOfSubviews];
         [subview setCenter:CGPointMake(CGRectGetMidX(itemFrames[numberOfSubviews]) + drawViewPadding, midY)];
-        
+
         var subviewFrame = [subview frame];
-        
+
         // Make sure the label stays within the rame
         if (subviewFrame.origin.x < 0)
         {
-            frameIsDirty = YES;
             subviewFrame.origin.x = 0;
             [subview setFrame:subviewFrame];
         }
         else if (CGRectGetMaxX(subviewFrame) > bounds.size.width)
         {
-            frameIsDirty = YES;
             subviewFrame.origin.x -= CGRectGetMaxX(subviewFrame) - bounds.size.width;
             [subview setFrame:subviewFrame];
         }
     }
 }
- 
+
 @end
 
 
@@ -692,14 +696,14 @@ var LPChartLabelViewChartKey          = @"LPChartLabelViewChartKey",
 {
     int _itemIndex @accessors(property=itemIndex);
 }
- 
+
 + (id)labelWithItemIndex:(int)anItemIndex
 {
     var label = [[self alloc] initWithFrame:CGRectMakeZero()];
     [label setItemIndex:anItemIndex];
     return label;
 }
- 
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])

@@ -340,9 +340,8 @@ var sharedErrorLoggerInstance = nil;
     [CPApp stopModal];
     [self orderOut:nil];
 
-    serverReply = aData;
-
-    var alert = [[CPAlert alloc] init];
+    var serverReply = aData,
+        alert = [[CPAlert alloc] init];
 
     [alert setAlertStyle:CPInformationalAlertStyle];
     [alert addButtonWithTitle:@"Thanks!"];

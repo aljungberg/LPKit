@@ -312,8 +312,6 @@
 
 - (void)setHighlighted:(BOOL)shouldBeHighlighted
 {
-    isHighlighted = shouldBeHighlighted;
-
     if (shouldBeHighlighted)
         [self setThemeState:CPThemeStateHighlighted];
     else

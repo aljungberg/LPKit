@@ -27,10 +27,12 @@
  * THE SOFTWARE.
  *
  */
-@import <AppKit/CPControl.j>
-@import <AppKit/CPView.j>
+
 @import <Foundation/CPDate.j>
 
+@import <AppKit/CPControl.j>
+@import <AppKit/CPView.j>
+@import <AppKit/CPTextField.j>
 
 var immutableDistantFuture = [CPDate distantFuture];
 
@@ -139,11 +141,11 @@ var _startAndEndOfWeekCache = {};
         date = [CPDate dateAtMidnight:date];
 
         // There must be a better way to do this.
-        _firstDay = [date copy];
-        _firstDay.setDate(1);
+        var firstDay = [date copy];
+        firstDay.setDate(1);
 
-        previousMonth = new Date(_firstDay.getTime() - 86400000);
-        nextMonth = new Date(_firstDay.getTime() + (([date daysInMonth] + 1) * 86400000));
+        previousMonth = new Date(firstDay.getTime() - 86400000);
+        nextMonth = new Date(firstDay.getTime() + (([date daysInMonth] + 1) * 86400000));
     }
 
     [self reloadData];
@@ -189,10 +191,10 @@ var _startAndEndOfWeekCache = {};
 
 - (CPArray)startAndEndOfWeekForDate:(CPDate)aDate
 {
-    _cached = _startAndEndOfWeekCache[aDate.toString()];
+    var cached = _startAndEndOfWeekCache[aDate.toString()];
 
-    if (_cached)
-        return _cached;
+    if (cached)
+        return cached;
 
     var startOfWeek = new Date(aDate.getTime() - ([self startOfWeekForDate:aDate] * 86400000)),
         endOfWeek = new Date(startOfWeek.getTime() + (6 * 86400000));

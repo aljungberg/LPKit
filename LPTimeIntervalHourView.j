@@ -28,18 +28,20 @@
 *
 */
 
-
 @import <AppKit/CPView.j>
+@import <AppKit/CPStepper.j>
+
+@class LPTimeIntervalDayView
 
 @implementation LPTimeIntervalHourView : CPView
 {
-    id                  _delegate          @accessors(property=delegate);
+    id                      _delegate          @accessors(property=delegate);
 
-    BOOL                _stepperHours;
-    CPStepper           _startStepper;
-    CPStepper           _endStepper;
-    CPTextField         _startTextField;
-    CPTextField         _endTextField;
+    BOOL                    _stepperHours;
+    CPStepper               _startStepper;
+    CPStepper               _endStepper;
+    CPTextField             _startTextField;
+    CPTextField             _endTextField;
     LPTimeIntervalDayView   _calendarView;
 }
 
