@@ -127,7 +127,7 @@
     [_endTextField sizeToFit];
 }
 
--(void)layoutSubviews
+- (void)layoutSubviews
 {
     var themeState = [self themeState];
 

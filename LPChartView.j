@@ -478,7 +478,7 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
 {
 }
 
-- (id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {
@@ -546,7 +546,7 @@ var LPChartViewDataSourceKey       = @"LPChartViewDataSourceKey",
     CPArray _cachedLabels;
 }
 
-- (id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {
