@@ -446,7 +446,7 @@ var CubicBezierAtTime = function(t,p1x,p1y,p2x,p2y,duration)
                 return t2;
 
             d2 = sampleCurveDerivativeX(t2);
-            if (fabs(d2) < 1e - 6)
+            if (fabs(d2) < 1e-6)
                 break
 
             t2 = t2 - x2 / d2;
