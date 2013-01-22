@@ -36,6 +36,9 @@
 
 @import "Resources/stacktrace.js"
 
+@global location
+@global navigator
+
 var sharedErrorLoggerInstance = nil;
 
 

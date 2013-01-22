@@ -31,6 +31,7 @@
 @import <AppKit/CPControl.j>
 
 @import "LPSlideView.j"
+@import "_LPArrowButton.j"
 
 var LPTimeIntervalYearView_yearCalendar_didMakeSelection_    = 1 << 1;
 
