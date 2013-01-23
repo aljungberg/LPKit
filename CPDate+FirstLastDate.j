@@ -56,6 +56,13 @@
     return newDate;
 }
 
++ (CPDate)firstHourOfDay:(CPDate)aDate
+{
+    aDate.setHours(0, 0, 0, 0);
+    return aDate;
+}
+
+
 /*! Return the first time of a day
     @param aDate a day
     @return a new date

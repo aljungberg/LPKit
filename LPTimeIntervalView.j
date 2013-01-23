@@ -95,11 +95,12 @@ LPIntervalTypeHour    = 4;
         [_yearCalendarView setYear:date];
         [self addSubview:_yearCalendarView];
 
-        _intervalType = LPIntervalTypeHour;
+        _intervalType = LPIntervalTypeDay;
 
-        _endDate = [self _intervalForEndDay:date];
         _startDate = [self _intervalForFirstDay:date];
+        _endDate = [self _intervalForEndDay:date];
     }
+
     return self;
 }
 
@@ -229,7 +230,7 @@ LPIntervalTypeHour    = 4;
     switch (_intervalType)
     {
         case LPIntervalTypeDay :
-            return aDate;
+            return [CPDate firstHourOfDay:aDate];
             break;
 
         case LPIntervalTypeMonth :
@@ -239,8 +240,6 @@ LPIntervalTypeHour    = 4;
         case LPIntervalTypeYear:
             return [CPDate firstDateOfYear:aDate];
             break;
-
-        default:
     }
 
     return aDate;
@@ -265,8 +264,6 @@ LPIntervalTypeHour    = 4;
         case LPIntervalTypeYear:
             return [CPDate lastDateOfAnYear:aDate];
             break;
-
-        default:
     }
 
     return aDate;
