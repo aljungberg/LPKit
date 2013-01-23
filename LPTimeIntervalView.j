@@ -28,6 +28,10 @@
 *
 */
 
+@import <Foundation/Foundation.j>
+@import <AppKit/CPView.j>
+@import <AppKit/CPColor.j>
+
 @import "LPTimeIntervalHourView.j"
 @import "LPTimeIntervalYearView.j"
 @import "LPTimeIntervalDayView.j"
@@ -43,17 +47,17 @@ LPIntervalTypeHour    = 4;
 
 @implementation LPTimeIntervalView : CPView
 {
-    CPColor                 _borderColor                                 @accessors(property=borderColor);
-    CPDate                  _endDate                                     @accessors(getter=endDate);
-    CPDate                  _startDate                                   @accessors(getter=startDate);
-    id                      _timeIntervalViewDelegate                    @accessors(property=delegate);
-    int                     _intervalType                                @accessors(property=intervalType);
+    CPColor                     _borderColor                                 @accessors(property=borderColor);
+    CPDate                      _endDate                                     @accessors(getter=endDate);
+    CPDate                      _startDate                                   @accessors(getter=startDate);
+    id                          _timeIntervalViewDelegate                    @accessors(property=delegate);
+    int                         _intervalType                                @accessors(property=intervalType);
 
     LPTimeIntervalHourView      _calendarHourView;
     LPTimeIntervalDayView       _calendarView;
     LPTimeIntervalMonthView     _monthCalendarView;
     LPTimeIntervalYearView      _yearCalendarView;
-    unsigned                _implementedTimeIntervalViewDelegateMethods;
+    unsigned                    _implementedTimeIntervalViewDelegateMethods;
 }
 
 

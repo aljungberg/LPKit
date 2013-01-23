@@ -27,7 +27,10 @@
  * THE SOFTWARE.
  *
  */
-@import <Foundation/CPObject.j>
+
+@import <Foundation/Foundation.j>
+@import <AppKit/CPView.j>
+@import <AppKit/CPColor.j>
 
 /*
     TODO: replace this with a wrapper around

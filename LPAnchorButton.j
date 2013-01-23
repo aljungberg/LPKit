@@ -28,8 +28,11 @@
  *
  */
 
+@import <Foundation/Foundation.j>
 @import <AppKit/CPControl.j>
+@import <AppKit/_CPImageAndTextView.j>
 
+@global CPWindowAbove
 
 LPAnchorButtonNoUnderline     = 0;
 LPAnchorButtonNormalUnderline = 1;

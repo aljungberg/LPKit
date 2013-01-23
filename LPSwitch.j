@@ -28,7 +28,11 @@
  *
  */
 
+@import <Foundation/Foundation.j>
 @import <AppKit/CPControl.j>
+@import <AppKit/CPView.j>
+@import <AppKit/CPTextField.j>
+
 @import "LPViewAnimation.j"
 
 

@@ -28,6 +28,7 @@
  *
  */
 
+@import <Foundation/Foundation.j>
 
 @import "LPCalendarView.j"
 

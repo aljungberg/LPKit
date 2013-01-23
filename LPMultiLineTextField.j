@@ -27,9 +27,11 @@
  *
  */
 
+@import <Foundation/Foundation.j>
 @import <AppKit/CPTextField.j>
 
 @global CPApp
+@global CPWindowAbove
 
 var CPTextFieldInputOwner = nil,
     CPTextFieldInputResigning = NO,

@@ -28,7 +28,9 @@
 *
 */
 
+@import <Foundation/Foundation.j>
 @import <AppKit/CPButton.j>
+
 
 @implementation _LPArrowButton : CPButton
 {

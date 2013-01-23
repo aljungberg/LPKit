@@ -28,7 +28,9 @@
  *
  */
 
+@import <Foundation/Foundation.j>
 @import <AppKit/CPView.j>
+
 @import "LPViewAnimation.j"
 
 LPSlideViewHorizontalDirection = 0;

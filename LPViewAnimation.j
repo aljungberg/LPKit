@@ -27,7 +27,7 @@
  *
  */
 
-@import <Foundation/CPObject.j>
+@import <Foundation/Foundation.j>
 @import <AppKit/CPAnimation.j>
 
 LPCSSAnimationsAreAvailable = NO;

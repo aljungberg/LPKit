@@ -28,7 +28,7 @@
  *
  */
 
-@import <Foundation/CPDate.j>
+@import <Foundation/Foundation.j>
 
 @import <AppKit/CPControl.j>
 @import <AppKit/CPView.j>

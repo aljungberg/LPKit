@@ -27,6 +27,8 @@
  * THE SOFTWARE.
  *
  */
+
+@import <Foundation/Foundation.j>
 @import <AppKit/CPView.j>
 
 

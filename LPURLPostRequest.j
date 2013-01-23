@@ -28,7 +28,7 @@
  *
  */
 
-@import <Foundation/CPURLRequest.j>
+@import <Foundation/Foundation.j>
 
 @implementation LPURLPostRequest : CPURLRequest
 {

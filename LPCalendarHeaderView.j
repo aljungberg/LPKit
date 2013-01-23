@@ -27,6 +27,8 @@
  * THE SOFTWARE.
  *
  */
+
+@import <Foundation/Foundation.j>
 @import <AppKit/CPButton.j>
 @import <AppKit/CPControl.j>
 @import <AppKit/CPTextField.j>

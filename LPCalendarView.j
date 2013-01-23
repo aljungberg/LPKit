@@ -27,10 +27,16 @@
  * THE SOFTWARE.
  *
  */
+
+@import <Foundation/Foundation.j>
 @import <AppKit/CPControl.j>
+@import <AppKit/CPView.j>
+
 @import "LPCalendarHeaderView.j"
 @import "LPCalendarMonthView.j"
 @import "LPSlideView.j"
+
+@global CPWindowBelow
 
 
 @implementation LPCalendarView : CPView
@@ -72,7 +78,7 @@
         fullSelection = [nil, nil];
 
         var bounds = [self bounds];
-    [self setClipsToBounds:NO];
+        [self setClipsToBounds:NO];
 
         headerView = [[LPCalendarHeaderView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), 40)];
         [[headerView prevButton] setTarget:self];

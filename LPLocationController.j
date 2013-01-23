@@ -27,7 +27,7 @@
  * THE SOFTWARE.
  *
  */
-@import <Foundation/CPObject.j>
+@import <Foundation/Foundation.j>
 
 var sharedLocationControllerInstance = nil;
 

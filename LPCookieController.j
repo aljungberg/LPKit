@@ -28,8 +28,7 @@
  *
  */
 
-@import <Foundation/CPObject.j>
-@import <Foundation/CPRange.j>
+@import <Foundation/Foundation.j>
 
 var sharedCookieControllerInstance = nil;
 

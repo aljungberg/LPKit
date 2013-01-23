@@ -28,6 +28,7 @@
 *
 */
 
+@import <Foundation/Foundation.j>
 @import <AppKit/CPView.j>
 @import <AppKit/CPStepper.j>
 

@@ -27,9 +27,12 @@
  * THE SOFTWARE.
  *
  */
+
+@import <Foundation/Foundation.j>
 @import <AppKit/CPView.j>
 @import <AppKit/CPTextField.j>
 
+@global CPWindowAbove
 
 // TODO: These should be ivars, or more likely, theme settings.
 

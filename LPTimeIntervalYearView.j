@@ -28,7 +28,9 @@
 *
 */
 
+@import <Foundation/Foundation.j>
 @import <AppKit/CPControl.j>
+@import <AppKit/CPTextField.j>
 
 @import "LPSlideView.j"
 @import "_LPArrowButton.j"
@@ -40,9 +42,9 @@ var LPTimeIntervalYearView_yearCalendar_didMakeSelection_    = 1 << 1;
     CPDate                  _year                   @accessors(property=year);
     id                      _yearCalendarDelegate   @accessors(property=delegate);
 
-    _LPContentMonthCalendar _currentYearCalendar;
-    _LPContentMonthCalendar _previousYearCalendar;
-    _LPContentMonthCalendar _nextYearCalendar;
+    _LPContentYearCalendar  _currentYearCalendar;
+    _LPContentYearCalendar  _previousYearCalendar;
+    _LPContentYearCalendar  _nextYearCalendar;
     CPDate                  _currentDate;
     CPTextField             _yearLabel;
     CPView                  _headerMonthCalendar;
