@@ -26,13 +26,16 @@
  * THE SOFTWARE.
  *
  */
+
+@import <AppKit/CPApplication.j>
 @import <AppKit/CPTextField.j>
 
-var CPTextFieldInputOwner = nil,
-    CPTextFieldInputResigning = NO,
+var CPTextFieldBlurFunction,
     CPTextFieldInputDidBlur = NO,
+    CPTextFieldInputFunction = nil,
     CPTextFieldInputIsActive = NO,
-    CPTextFieldBlurFunction;
+    CPTextFieldInputOwner = nil,
+    CPTextFieldInputResigning = NO;
 
 @implementation LPMultiLineTextField : CPTextField
 {
