@@ -311,15 +311,6 @@ var CPTextFieldBlurFunction,
     [self _updatePlaceholderState];
 }
 
-- (void)_setCurrentValueIsPlaceholder:(BOOL)isPlaceholder
-{
-    //  Under certain circumstances, _originalPlaceholderString is empty.
-    if (!_originalPlaceholderString)
-        _originalPlaceholderString = [self placeholderString];
-
-    [super _setCurrentValueIsPlaceholder:isPlaceholder];
-}
-
 @end
 
 
