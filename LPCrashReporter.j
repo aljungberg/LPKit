@@ -28,7 +28,7 @@
  *
  */
 
-@import <Foundation/CPObject.j>
+@import <Foundation/Foundation.j>
 @import <AppKit/CPAlert.j>
 
 @import "LPURLPostRequest.j"
