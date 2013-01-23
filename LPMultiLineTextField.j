@@ -26,13 +26,16 @@
  * THE SOFTWARE.
  *
  */
+
+@import <AppKit/CPApplication.j>
 @import <AppKit/CPTextField.j>
 
-var CPTextFieldInputOwner = nil,
-    CPTextFieldInputResigning = NO,
+var CPTextFieldBlurFunction,
     CPTextFieldInputDidBlur = NO,
+    CPTextFieldInputFunction = nil,
     CPTextFieldInputIsActive = NO,
-    CPTextFieldBlurFunction;
+    CPTextFieldInputOwner = nil,
+    CPTextFieldInputResigning = NO;
 
 @implementation LPMultiLineTextField : CPTextField
 {
@@ -312,15 +315,6 @@ var CPTextFieldInputOwner = nil,
         [self _DOMTextareaElement].value = aValue;
 
     [self _updatePlaceholderState];
-}
-
-- (void)_setCurrentValueIsPlaceholder:(BOOL)isPlaceholder
-{
-    //  Under certain circumstances, _originalPlaceholderString is empty.
-    if (!_originalPlaceholderString)
-        _originalPlaceholderString = [self placeholderString];
-
-    [super _setCurrentValueIsPlaceholder:isPlaceholder];
 }
 
 @end
