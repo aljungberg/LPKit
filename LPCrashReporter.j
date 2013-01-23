@@ -28,12 +28,17 @@
  *
  */
 
-@import <Foundation/CPObject.j>
+@import <Foundation/Foundation.j>
 @import <AppKit/CPAlert.j>
-@import <LPKit/LPURLPostRequest.j>
-@import <LPKit/LPMultiLineTextField.j>
+
+@import "LPURLPostRequest.j"
+@import "LPMultiLineTextField.j"
 
 @import "Resources/stacktrace.js"
+
+@global location
+@global navigator
+@global CPApp
 
 var sharedErrorLoggerInstance = nil;
 
@@ -339,9 +344,8 @@ var sharedErrorLoggerInstance = nil;
     [CPApp stopModal];
     [self orderOut:nil];
 
-    serverReply = aData;
-
-    var alert = [[CPAlert alloc] init];
+    var serverReply = aData,
+        alert = [[CPAlert alloc] init];
 
     [alert setAlertStyle:CPInformationalAlertStyle];
     [alert addButtonWithTitle:@"Thanks!"];

@@ -26,7 +26,10 @@
  * THE SOFTWARE.
  *
  */
+
 @import <AppKit/CPTextField.j>
+
+@global CPApp
 
 var CPTextFieldInputOwner = nil,
     CPTextFieldInputResigning = NO,
@@ -81,7 +84,7 @@ var CPTextFieldInputOwner = nil,
             CPTextFieldInputDidBlur = YES;
         };
 
-        CPTextFieldInputFunction = function()
+        var CPTextFieldInputFunction = function()
         {
             [CPTextFieldInputOwner _setValueFromElement];
         };
@@ -312,15 +315,6 @@ var CPTextFieldInputOwner = nil,
         [self _DOMTextareaElement].value = aValue;
 
     [self _updatePlaceholderState];
-}
-
-- (void)_setCurrentValueIsPlaceholder:(BOOL)isPlaceholder
-{
-    //  Under certain circumstances, _originalPlaceholderString is empty.
-    if (!_originalPlaceholderString)
-        _originalPlaceholderString = [self placeholderString];
-
-    [super _setCurrentValueIsPlaceholder:isPlaceholder];
 }
 
 @end

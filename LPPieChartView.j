@@ -3,21 +3,21 @@
  * LPKit
  *
  * Created by Ludwig Pettersson on January 9, 2010.
- * 
+ *
  * The MIT License
- * 
+ *
  * Copyright (c) 2009 Ludwig Pettersson
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,7 +25,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- * 
+ *
  */
 @import <AppKit/CPView.j>
 
@@ -35,7 +35,7 @@
     id dataSource @accessors;
     id delegate @accessors;
     id drawView @accessors;
-    
+
     CPArray values;
     float sum;
     CPArray paths @accessors(readonly);
@@ -47,7 +47,7 @@
     {
         // Default draw view
         [self setDrawView:[[LPPieChartDrawView alloc] initWithFrame:CGRectMakeZero()]];
-        
+
         paths = [CPArray array];
     }
     return self;
@@ -68,19 +68,19 @@
 - (void)setDrawView:(id)aDrawView
 {
     var _newDrawView = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:aDrawView]];
-    
+
     if (!drawView)
         [self addSubview:_newDrawView];
     else
         [self replaceSubview:drawView with:_newDrawView];
-    
+
     // Got a new drawView
     drawView = _newDrawView;
-    
+
     // Update drawView frame & autoresizingmask
     [drawView setFrame:[self bounds]];
     [drawView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    
+
     // Re-draw
     [self reloadData];
 }
@@ -91,10 +91,10 @@
     {
         var numberOfItems = [dataSource numberOfItemsInPieChartView:self],
             colors = [CPArray array];
-            
+
         values = [CPArray array];
         sum = 0.0;
-        
+
         for (var i = 0; i < numberOfItems; i++)
         {
             var value = [dataSource pieChartView:self floatValueForIndex:i];
@@ -104,34 +104,34 @@
 
         // Update paths
         [self setNeedsLayout];
-    
+
         // Update Draw view
         [drawView setNeedsDisplay:YES];
     }
 }
 
 - (void)layoutSubviews
-{   
+{
     var bounds = [drawView bounds],
         radius = MIN(CGRectGetWidth(bounds), CGRectGetHeight(bounds)) / 2,
         midX = CGRectGetMidX(bounds),
         midY = CGRectGetMidY(bounds),
         current_angle = 0.0;
-        
+
     paths = [CPArray array];
-    
+
     for (var i = 0; i < values.length; i++)
     {
         var value = values[i],
             end_angle = (value / sum) * 360.0;
-        
+
         var path = CGPathCreateMutable();
         CGPathMoveToPoint(path, nil, midX, midY);
         CGPathAddArc(path, nil, midX, midY, radius, current_angle / (180 / PI), (current_angle + end_angle) / (180 / PI), YES);
         CGPathAddLineToPoint(path, nil, midX, midY);
-        
+
         paths.push(path);
-        
+
         current_angle += end_angle;
     }
 }
@@ -139,25 +139,25 @@
 - (id)indexOfValueAtPoint:(CGPoint)aPoint
 {
     var context = CGBitmapGraphicsContextCreate();
-    
+
     if (context.isPointInPath)
-    {    
+    {
         for (var i = 0; i < paths.length; i++)
         {
             CGContextBeginPath(context);
             CGContextAddPath(context, paths[i]);
             CGContextClosePath(context);
-        
+
             if (context.isPointInPath(aPoint.x, aPoint.y))
                 return i;
         }
     }
-    
+
     return -1;
 }
 
 - (void)mouseMoved:(CPEvent)anEvent
-{   
+{
     if ([delegate respondsToSelector:@selector(pieChartView:mouseMovedOverIndex:)])
     {
         var locationInView = [self convertPoint:[anEvent locationInWindow] fromView:nil];
@@ -180,30 +180,30 @@ var LPPieChartViewDrawViewKey = @"LPPieChartViewDrawView",
     LPPieChartViewPathsKey    = @"LPPieChartViewPaths";
 
 @implementation LPPieChartView (CPCoding)
- 
+
 - (id)initWithCoder:(CPCoder)aCoder
 {
     if (self)
     {
         drawView = [aCoder decodeObjectForKey:LPPieChartViewDrawViewKey];
-        
+
         values = [aCoder decodeObjectForKey:LPPieChartViewValuesKey];
         sum = [aCoder decodeFloatForKey:LPPieChartViewSumKey];
         paths = [aCoder decodeObjectForKey:LPPieChartViewPathsKey];
     }
- 
+
     return self;
 }
- 
+
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:drawView forKey:LPPieChartViewDrawViewKey];
-    
+
     [aCoder encodeObject:values forKey:LPPieChartViewValuesKey];
     [aCoder encodeFloat:sum forKey:LPPieChartViewSumKey];
     [aCoder encodeObject:paths forKey:LPPieChartViewPathsKey];
 }
- 
+
 @end
 
 
@@ -223,7 +223,7 @@ var LPPieChartViewDrawViewKey = @"LPPieChartViewDrawView",
 }
 
 - (void)drawRect:(CGRect)aRect
-{    
+{
     // Should superview really be used?
     if ([self superview])
     {
@@ -239,9 +239,9 @@ var LPPieChartViewDrawViewKey = @"LPPieChartViewDrawView",
     */
     CGContextSetLineWidth(context, [self currentValueForThemeAttribute:@"line-width"]);
     CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"stroke-color"]);
-    
+
     var fillColors = [self currentValueForThemeAttribute:@"fill-colors"];
-    
+
     for (var i = 0; i < paths.length; i++)
     {
         CGContextBeginPath(context);

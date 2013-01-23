@@ -28,9 +28,9 @@
  *
  */
 @import <AppKit/CPControl.j>
-@import <LPKit/LPCalendarHeaderView.j>
-@import <LPKit/LPCalendarMonthView.j>
-@import <LPKit/LPSlideView.j>
+@import "LPCalendarHeaderView.j"
+@import "LPCalendarMonthView.j"
+@import "LPSlideView.j"
 
 
 @implementation LPCalendarView : CPView
@@ -47,6 +47,7 @@
 
     id                  _target @accessors(property=target);
     SEL                 _doubleAction @accessors(property=doubleAction);
+    CPView              bezelView;
 }
 
 + (CPString)themeClass
@@ -56,8 +57,8 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], CGInsetMakeZero(), [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], CGSizeMake(0,0), [CPNull null], [CPNull null], 40, [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], 30, [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:[@"bezel-color", @"bezel-inset", @"grid-color", @"grid-shadow-color",
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], CGInsetMakeZero(), [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], CGSizeMake(0,0), [CPNull null], [CPNull null], 40, [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], 30, [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
+                                       forKeys:[@"background-color", @"bezel-color", @"bezel-inset", @"grid-color", @"grid-shadow-color",
                                                 @"tile-size", @"tile-font", @"tile-text-color", @"tile-text-shadow-color", @"tile-text-shadow-offset", @"tile-bezel-color",
                                                 @"header-button-offset", @"header-prev-button-image", @"header-next-button-image", @"header-height", @"header-background-color", @"header-font", @"header-text-color", @"header-text-shadow-color", @"header-text-shadow-offset", @"header-alignment",
                                                 @"header-weekday-offset", @"header-weekday-label-font", @"header-weekday-label-color", @"header-weekday-label-shadow-color", @"header-weekday-label-shadow-offset"]];

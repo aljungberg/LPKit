@@ -27,10 +27,14 @@
  * THE SOFTWARE.
  *
  */
-@import <AppKit/CPControl.j>
-@import <AppKit/CPView.j>
+
 @import <Foundation/CPDate.j>
 
+@import <AppKit/CPControl.j>
+@import <AppKit/CPView.j>
+@import <AppKit/CPTextField.j>
+
+@global CPApp
 
 var immutableDistantFuture = [CPDate distantFuture];
 
@@ -139,11 +143,11 @@ var _startAndEndOfWeekCache = {};
         date = [CPDate dateAtMidnight:date];
 
         // There must be a better way to do this.
-        _firstDay = [date copy];
-        _firstDay.setDate(1);
+        var firstDay = [date copy];
+        firstDay.setDate(1);
 
-        previousMonth = new Date(_firstDay.getTime() - 86400000);
-        nextMonth = new Date(_firstDay.getTime() + (([date daysInMonth] + 1) * 86400000));
+        previousMonth = new Date(firstDay.getTime() - 86400000);
+        nextMonth = new Date(firstDay.getTime() + (([date daysInMonth] + 1) * 86400000));
     }
 
     [self reloadData];
@@ -189,10 +193,10 @@ var _startAndEndOfWeekCache = {};
 
 - (CPArray)startAndEndOfWeekForDate:(CPDate)aDate
 {
-    _cached = _startAndEndOfWeekCache[aDate.toString()];
+    var cached = _startAndEndOfWeekCache[aDate.toString()];
 
-    if (_cached)
-        return _cached;
+    if (cached)
+        return cached;
 
     var startOfWeek = new Date(aDate.getTime() - ([self startOfWeekForDate:aDate] * 86400000)),
         endOfWeek = new Date(startOfWeek.getTime() + (6 * 86400000));
@@ -378,14 +382,14 @@ var _startAndEndOfWeekCache = {};
     // Clicked a date
     if (!currentSelectionIndex || startSelectionIndex == currentSelectionIndex)
     {
-        var calendarView = [[self superview] superview],
+        var currentCalendarView = [[self superview] superview],
             tile = [[self subviews] objectAtIndex:startSelectionIndex],
             tileDate = [tile date],
             tileMonth = tileDate.getMonth();
 
         // Double clicked a date in the current month.
-        if (tileMonth == date.getMonth() && [[CPApp currentEvent] clickCount] === 2 && [calendarView doubleAction])
-            [CPApp sendAction:[calendarView doubleAction] to:[calendarView target] from:calendarView];
+        if (tileMonth == date.getMonth() && [[CPApp currentEvent] clickCount] === 2 && [currentCalendarView doubleAction])
+            [CPApp sendAction:[currentCalendarView doubleAction] to:[currentCalendarView target] from:currentCalendarView];
 
         // Clicked the Previous month
         if (tileMonth == previousMonth.getMonth())
@@ -472,34 +476,41 @@ var _startAndEndOfWeekCache = {};
                             end:(anEndIndex > -1) ? [[tiles objectAtIndex:anEndIndex] date] : nil];
 }
 
-- (void) drawRect:(CGRect)aRect {
+- (void)drawRect:(CGRect)aRect
+{
 
-	var	context = [[CPGraphicsContext currentContext] graphicsPort],
-		bounds = [self bounds],
-		width = CGRectGetWidth(bounds),
-		height = CGRectGetHeight(bounds),
-		tileSize = [self tileSize];
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        bounds = [self bounds],
+        width = CGRectGetWidth(bounds),
+        height = CGRectGetHeight(bounds),
+        tileSize = [self tileSize];
 
-	var	hLine = function (inMarginTop) {
+    var hLine = function (inMarginTop) {
 
-			CGContextFillRect(context, CGRectMake(0, inMarginTop, width, 1));
+            CGContextFillRect(context, CGRectMake(0, inMarginTop, width, 1));
 
-		},
+        },
 
-		vLine = function (inMarginLeft) {
+        vLine = function (inMarginLeft) {
 
-			CGContextFillRect(context, CGRectMake(inMarginLeft, 0, 1, height));
+            CGContextFillRect(context, CGRectMake(inMarginLeft, 0, 1, height));
 
-		};
+        };
 
-	CGContextSetFillColor(context, [calendarView currentValueForThemeAttribute:@"grid-shadow-color"]);
-	for (var i = 1; i < 6; i++) hLine(tileSize.height * i - 1);
-	for (var i = 1; i < 7; i++) vLine(tileSize.width * i - 1);
+    CGContextSetFillColor(context, [calendarView currentValueForThemeAttribute:@"grid-shadow-color"]);
+    for (var i = 1; i < 6; i++)
+        hLine(tileSize.height * i - 1);
 
-	CGContextSetFillColor(context, [calendarView currentValueForThemeAttribute:@"grid-color"]);
-	for (var i = 1; i < 6; i++) hLine(tileSize.height * i);
-	for (var i = 1; i < 7; i++) vLine(tileSize.width * i);
+    for (var i = 1; i < 7; i++)
+        vLine(tileSize.width * i - 1);
 
+    CGContextSetFillColor(context, [calendarView currentValueForThemeAttribute:@"grid-color"]);
+
+    for (var i = 1; i < 6; i++)
+        hLine(tileSize.height * i);
+
+    for (var i = 1; i < 7; i++)
+        vLine(tileSize.width * i);
 }
 
 @end
