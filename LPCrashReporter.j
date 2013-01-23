@@ -38,6 +38,7 @@
 
 @global location
 @global navigator
+@global CPApp
 
 var sharedErrorLoggerInstance = nil;
 

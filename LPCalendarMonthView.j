@@ -34,6 +34,8 @@
 @import <AppKit/CPView.j>
 @import <AppKit/CPTextField.j>
 
+@global CPApp
+
 var immutableDistantFuture = [CPDate distantFuture];
 
 @implementation CPDate (DaysInMonth)

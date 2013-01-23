@@ -26,7 +26,10 @@
  * THE SOFTWARE.
  *
  */
+
 @import <AppKit/CPTextField.j>
+
+@global CPApp
 
 var CPTextFieldInputOwner = nil,
     CPTextFieldInputResigning = NO,
