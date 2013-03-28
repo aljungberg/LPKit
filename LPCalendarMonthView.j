@@ -99,7 +99,7 @@ var _startAndEndOfWeekCache = {};
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[nil]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null]]
                                        forKeys:[@"grid-color"]];
 }
 
@@ -534,7 +534,7 @@ var _startAndEndOfWeekCache = {};
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[nil, nil]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null]]
                                        forKeys:[@"background-color", @"bezel-color"]];
 }
 
